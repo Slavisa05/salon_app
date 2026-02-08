@@ -1,0 +1,38 @@
+:root {
+    --primary: #6366F1;
+    --secondary: #8B5CF6;
+    --accent: #F59E0B;
+    --success: #10B981;
+    --bg: #F9FAFB;
+    --text: #1F2937;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.4rem;
+    color: var(--text);
+    background-color: var(--bg);
+}
+
+h1 {
+   font-family: 'Inter', sans-serif;
+    font-size: 2.5rem;
+    line-height: 2.7rem; 
+}
+
+h2 {
+   font-family: 'Inter', sans-serif;
+    font-size: 2rem;
+    line-height: 2.2rem; 
+}
+
+h3 {
+   font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1.7rem; 
+}
