@@ -1,1 +1,41 @@
 {% extends "salons/salons_base.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock title %}
+
+{% block description %}
+    Dashboard za frizere
+{% endblock description %}
+
+{% block content %}
+    <main>
+        <section class="salon-dashboard-section">
+            <div class="dashboard-header">
+                <div class="dashboard-stats">
+                    <strong>Ukupan prihod ovog meseca</strong>
+                    <p>17.000 din</p>
+                </div>
+
+                <div class="dashboard-stats">
+                    <strong>Broj termina za danas</strong>
+                    <p>10</p>
+                </div>
+
+                <div class="dashboard-stats">
+                    <strong>Novi klijenti ovog meseca</strong>
+                    <p>+7</p>
+                </div>
+
+                <div class="dashboard-stats">
+                    <strong>Najprofitabilnija usluga</strong>
+                    <p>Fade sisanje</p>
+                </div>
+            </div>
+
+            <div class="dashboard-appoitments">
+                {# ovde napraviti kao termine za danas #}
+            </div>
+        </section>
+    </main>
+{% endblock content %}

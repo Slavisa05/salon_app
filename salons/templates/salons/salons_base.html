@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'salons/css/salons.css' %}">
 {% endblock extra_css %}    
 
-{% block content %}
+{% block nav %}
     {% include "salons/partials/salons_sidebar.html" %}
-{% endblock content %}
+{% endblock nav %}
 
 {% block extra_js %}
-    <script src="{% static 'salons/js/salons.css' %}"></script>
+    <script src="{% static 'salons/js/salons.js' %}"></script>
 {% endblock extra_js %}

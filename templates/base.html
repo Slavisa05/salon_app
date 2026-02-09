@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +11,8 @@
     {% block extra_css %}{% endblock extra_css %}
 </head>
 <body>
-    
+    {% block nav %}{% endblock nav %}
+
     {% block content %}{% endblock content %}
 
     <script src="{% static 'js/main.js' %}"></script>
