@@ -1,0 +1,33 @@
+{% extends "salons/salons_base.html" %}
+
+{% block title %}
+    Usluge
+{% endblock title %}
+
+{% block description %}
+    Usluge frizerskog salona
+{% endblock description %}
+
+{% block content %}
+    <main>
+        <section class="services-page-section">
+            <div class="inline-div space-between">
+                <h1>Moje usluge</h1>
+                <button class="main-btn">+ dodaj novu uslugu</button>
+            </div>
+
+            <div class="dashboard-appoitments"> 
+                <div class="card services">
+                    <h3>Klasicno sisanje</h3>
+                    <p>Vreme trajanja: 30 min</p>
+                    <p>Cena: 500 din</p>
+
+                    <div class="inline-div">
+                        <button class="card-btn">izmeni uslugu</button>
+                        <button class="delete-btn">obrisi uslugu</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock content %}

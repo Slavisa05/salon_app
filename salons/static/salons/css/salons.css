@@ -149,7 +149,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
     gap: 12px;
     border: none;
     border-radius: 10px;
-    background-image: linear-gradient(180deg, #6366F1, #8B5CF6);
+    background-image: var(--gradient180);
     transition: all 300ms ease;
 }
 
@@ -190,12 +190,15 @@ body.sidebar-collapsed .sidebar-toggle-text {
     gap: 20px;
 }
 
-.dashboard-card {
+.card {
     padding: 14px;
     border: none;
     border-radius: 10px;
-    background-image: linear-gradient(90deg, #6366F1, #8B5CF6);
+    background-image: var(--gradient90);
     color: var(--bg);
+}
+
+.card.dashboard {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 10px 16px;
@@ -204,7 +207,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
     transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
-.dashboard-card:hover {
+.card.dashboard:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
 }
@@ -253,7 +256,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
     height: 100%;
 }
 
-.dashboard-card .status-text {
+.card.dashboard .status-text {
     padding: 6px 10px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.16);
@@ -279,3 +282,5 @@ body.sidebar-collapsed .sidebar-toggle-text {
 .status-text.done {
     color: var(--success);
 }
+
+/* USLUGE */
