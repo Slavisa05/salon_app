@@ -35,12 +35,13 @@ body {
     margin-left: -5px;
     margin-bottom: 10px;
     padding: 10px 5px;
-    transition: all 200ms ease;
     border-radius: 10px;
+    transition: all 200ms ease;
 }
 
 .sidebar-links li:hover {
     background-color: var(--primary);
+    padding-left: 10px;
 }
 
 .sidebar-links li:hover a {
@@ -98,6 +99,12 @@ body {
     border: none;
     border-radius: 10px;
     background-image: linear-gradient(180deg, #6366F1, #8B5CF6);
+    transition: all 300ms ease;
+}
+
+.dashboard-stats:hover {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.6),
+                0 0 40px rgba(139, 92, 246, 0.4);
 }
 
 .dashboard-stats strong {
@@ -108,4 +115,36 @@ body {
     text-transform: uppercase;
     color: var(--bg);
     font-size: 1.1rem;
+}
+
+.dashboard-appoitments {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.dashboard-card {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background-image: linear-gradient(90deg, #6366F1, #8B5CF6);
+    color: var(--bg);
+}
+
+.status-text {
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-text.todo {
+    color: var(--todo);
+}
+
+.status-text.progress {
+    color: var(--progress);
+}
+
+.status-text.done {
+    color: var(--success);
 }
