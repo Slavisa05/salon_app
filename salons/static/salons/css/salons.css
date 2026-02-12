@@ -553,3 +553,68 @@ body.sidebar-collapsed .sidebar-toggle-text {
     cursor: not-allowed;
     box-shadow: none;
 }
+
+/* FORM */
+.salon-form {
+    width: 70vw;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    gap: 16px 28px;
+    align-items: start;
+}
+
+.salon-form-group {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-control {
+    padding: 10px 5px;
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    background-image: var(--gradient90);
+    color: var(--bg);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.salon-form-image {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-items: center;
+    text-align: center;
+}
+
+.salon-form-image-title {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.salon-form-image-preview {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.salon-form-image-preview img {
+    width: min(220px, 100%);
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.salon-form-image input[type="file"] {
+    display: none;
+}
+
+.salon-form-image-btn {
+    margin-top: 6px;
+}
+
+.salon-form-actions {
+    grid-column: 1 / -1;
+    justify-self: start;
+}

@@ -9,6 +9,8 @@ urlpatterns = [
     path('<str:salon_name>/services/', views.services_page, name='services_page'),
     path('<str:salon_name>/schedule/', views.appointments_page, name='appointments'),
     path('<str:salon_name>/slots/', views.get_slots_for_date, name='get_slots'),
+    path('create_salon/', views.create_salon, name='create_salon'),
+    path('<str:salon_name>/edit_salon/', views.edit_salon, name='edit_salon'),
 
     # appoitments
     path('<str:salon_name>/slots/<int:slot_id>/block/', views.block_slot, name='block_slot'),

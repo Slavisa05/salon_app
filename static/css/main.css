@@ -48,6 +48,10 @@ h3 {
     line-height: 1.7rem; 
 }
 
+a {
+    text-decoration: none;
+}
+
 section {
     padding: 0 2vw;
 }

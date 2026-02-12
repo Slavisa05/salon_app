@@ -1,9 +1,13 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from datetime import date, timedelta, datetime
+from django.contrib import messages
 from .models import Salon, TimeSlot, Appointment
 from .utils import generate_time_slots_for_date
+from .forms import SalonForm 
 
 
 def salon_dashboard(request, salon_name):
@@ -197,3 +201,50 @@ def cancel_appointment(request, salon_name, slot_id):
     appointment.status = 'otkazano'
     appointment.save(update_fields=['status'])
     return JsonResponse({'status': 'ok'})
+
+
+@login_required
+def create_salon(request):
+    if hasattr(request.user, 'salon'):
+        return redirect('salon:salon_dashboard', salon_name=request.user.salon.name)
+
+    if request.method == 'POST':
+        form = SalonForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                salon = form.save(commit=False)
+                salon.owner = request.user
+                salon.save()
+
+                messages.success(request, f'Salon "{salon.name}" created successfully!')
+                return redirect('salon:salon_dashboard', salon_name=salon.name)
+            except Exception as e:
+                messages.error(request, f'Error creating salon: {str(e)}')
+    else:
+        form = SalonForm()
+
+    return render(request, 'salons/salon_form.html', {'form': form})
+
+
+@login_required
+def edit_salon(request, salon_name):
+    salon = get_object_or_404(Salon, name=salon_name)
+
+    if salon.owner != request.user:
+        return HttpResponseForbidden("You don't have permission to edit this salon")
+
+    if request.method == 'POST':
+        form = SalonForm(request.POST, request.FILES, instance=salon)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, f'Salon "{salon.name}" updated successfully!')
+                return redirect('salon:salon_dashboard', salon_name=salon.name)
+            except Exception as e:
+                messages.error(request, f'Error updating salon: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = SalonForm(instance=salon)
+
+    return render(request, 'salons/salon_form.html', {'form': form, 'salon': salon})

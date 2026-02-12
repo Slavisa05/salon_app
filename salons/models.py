@@ -5,8 +5,10 @@ from datetime import datetime, timedelta
 import math
 
 class Salon(models.Model):
+    owner = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(unique=True)
+    image = models.ImageField(default='img/barber_default.jpg')
     address = models.CharField(max_length=200, unique=True)
     phone = models.CharField(max_length=20, unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

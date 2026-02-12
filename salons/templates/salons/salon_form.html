@@ -1,0 +1,76 @@
+{% extends "salons/salons_base.html" %}
+{% load static %}
+
+{% block title %}
+    Podesavanja profila
+{% endblock title %}
+
+{% block description %}
+    Podesavanje frizerskog salona
+{% endblock description %}
+
+{% block content %}
+<main>
+    <section class="salons-settings-section">
+        <h1>{% if salon %}Edit Salon Info{% else %}Create New Salon{% endif %}</h1>
+
+        {% if form.non_field_errors %}
+            {{ form.non_field_errors }}
+        {% endif %}
+
+        <form class="salon-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="salon-form-group">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    {{ form.name.errors }}
+                {% endif %}
+            </div>
+
+            <div class="salon-form-group">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    {{ form.description.errors }}
+                {% endif %}
+            </div>
+
+            <div class="salon-form-group salon-form-image">
+                <span class="salon-form-image-title">{{ form.image.label }}</span>
+                <div class="salon-form-image-preview">
+                    {% if salon and salon.image and 'barber_default' not in salon.image.name|lower %}
+                        <img src="{{ salon.image.url }}" alt="Salon image">
+                    {% else %}
+                        <img src="{% static 'salons/img/barber_default.jpg' %}" alt="Default salon image">
+                    {% endif %}
+                </div>
+                <label for="{{ form.image.id_for_label }}" class="sec-btn salon-form-image-btn">
+                    Promeni sliku
+                </label>
+            </div>
+
+            <div class="salon-form-group">
+                <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    {{ form.address.errors }}
+                {% endif %}
+            </div>
+
+            <div class="salon-form-group">
+                <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    {{ form.phone.errors }}
+                {% endif %}
+            </div>
+
+            <div class="salon-form-actions inline-div">
+                <button type="submit" class="main-btn">Sačuvaj</button>
+            </div>
+        </form>
+    </section>
+</main>
+{% endblock content %}
