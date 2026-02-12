@@ -11,8 +11,8 @@ if (sidebarToggle) {
 
 // slots
 class SalonScheduler {
-    constructor(salonId) {
-        this.salonId = salonId;
+    constructor(salonName) {
+        this.salonName = salonName;
         this.selectedDate = new Date();
         this.selectedDate.setHours(12, 0, 0, 0);
         this.init();
@@ -91,7 +91,7 @@ class SalonScheduler {
         const dateStr = this.formatDate(date);
         
         try {
-            const response = await fetch(`/${this.salonId}/slots/?date=${dateStr}`);
+            const response = await fetch(`/${this.salonName}/slots/?date=${dateStr}`);
             
             if (!response.ok) {
                 throw new Error('Failed to fetch slots');
@@ -200,7 +200,7 @@ class SalonScheduler {
 
     async fetchAppointmentDetails(slotId) {
         try {
-            const response = await fetch(`/${this.salonId}/slots/${slotId}/appointment/`);
+            const response = await fetch(`/${this.salonName}/slots/${slotId}/appointment/`);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch appointment details');
@@ -289,7 +289,7 @@ class SalonScheduler {
 
     async cancelAppointment(slotId) {
         try {
-            const response = await fetch(`/${this.salonId}/slots/${slotId}/appointment/cancel/`, {
+            const response = await fetch(`/${this.salonName}/slots/${slotId}/appointment/cancel/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -335,7 +335,7 @@ class SalonScheduler {
             return;
         }
         try {
-            const response = await fetch(`/${this.salonId}/slots/${slotId}/block/`, {
+            const response = await fetch(`/${this.salonName}/slots/${slotId}/block/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -364,7 +364,7 @@ class SalonScheduler {
             return;
         }
         try {
-            const response = await fetch(`/${this.salonId}/slots/${slotId}/unblock/`, {
+            const response = await fetch(`/${this.salonName}/slots/${slotId}/unblock/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const salonIdElement = document.getElementById('salon-id');
     
     if (salonIdElement) {
-        const salonId = parseInt(salonIdElement.dataset.salonId);
-        window.salonScheduler = new SalonScheduler(salonId);
+        const salonName = salonIdElement.dataset.salonName;
+        window.salonScheduler = new SalonScheduler(salonName);
     }
 });

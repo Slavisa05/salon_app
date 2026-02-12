@@ -6,18 +6,18 @@ from .models import Salon, TimeSlot, Appointment
 from .utils import generate_time_slots_for_date
 
 
-def salon_dashboard(request, salon_id):
-    salon = get_object_or_404(Salon, id=salon_id)
+def salon_dashboard(request, salon_name):
+    salon = get_object_or_404(Salon, name=salon_name)
     return render(request, 'salons/dashboard.html', {'salon': salon})
 
 
-def services_page(request, salon_id):
-    salon = get_object_or_404(Salon, id=salon_id)
+def services_page(request, salon_name):
+    salon = get_object_or_404(Salon, name=salon_name)
     return render(request, 'salons/services.html', {'salon': salon})
 
 
-def appointments_page(request, salon_id):
-    salon = get_object_or_404(Salon, id=salon_id)
+def appointments_page(request, salon_name):
+    salon = get_object_or_404(Salon, name=salon_name)
     today = date.today()
 
     context = {
@@ -27,8 +27,8 @@ def appointments_page(request, salon_id):
 
     return render(request, 'salons/appointments.html', context)
 
-def get_slots_for_date(request, salon_id):
-    salon = get_object_or_404(Salon, id=salon_id)
+def get_slots_for_date(request, salon_name):
+    salon = get_object_or_404(Salon, name=salon_name)
     date_str = request.GET.get('date')
 
     try: 
@@ -88,8 +88,9 @@ def get_slots_for_date(request, salon_id):
 
 
 @require_POST
-def block_slot(request, salon_id, slot_id):
-    slot = get_object_or_404(TimeSlot, id=slot_id, salon_id=salon_id)
+def block_slot(request, salon_name, slot_id):
+    salon = get_object_or_404(Salon, name=salon_name)
+    slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
 
     if hasattr(slot, 'appointment'):
         return JsonResponse({'error': 'Slot already has appointment'}, status=400)
@@ -100,8 +101,9 @@ def block_slot(request, salon_id, slot_id):
 
 
 @require_POST
-def unblock_slot(request, salon_id, slot_id):
-    slot = get_object_or_404(TimeSlot, id=slot_id, salon_id=salon_id)
+def unblock_slot(request, salon_name, slot_id):
+    salon = get_object_or_404(Salon, name=salon_name)
+    slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
 
     if hasattr(slot, 'appointment'):
         return JsonResponse({'error': 'Slot already has appointment'}, status=400)
@@ -111,15 +113,16 @@ def unblock_slot(request, salon_id, slot_id):
     return JsonResponse({'status': 'ok'})
 
 
-def appointment_details(request, salon_id, slot_id):
-    slot = get_object_or_404(TimeSlot, id=slot_id, salon_id=salon_id)
+def appointment_details(request, salon_name, slot_id):
+    salon = get_object_or_404(Salon, name=salon_name)
+    slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
 
     appointment = None
     if hasattr(slot, 'appointment'):
         appointment = slot.appointment
     else:
         appointments = Appointment.objects.select_related('time_slot', 'service').filter(
-            time_slot__salon_id=salon_id,
+            time_slot__salon=salon,
             time_slot__date=slot.date
         ).exclude(status='otkazano')
 
@@ -155,15 +158,16 @@ def appointment_details(request, salon_id, slot_id):
 
 
 @require_POST
-def cancel_appointment(request, salon_id, slot_id):
-    slot = get_object_or_404(TimeSlot, id=slot_id, salon_id=salon_id)
+def cancel_appointment(request, salon_name, slot_id):
+    salon = get_object_or_404(Salon, name=salon_name)
+    slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
 
     appointment = None
     if hasattr(slot, 'appointment'):
         appointment = slot.appointment
     else:
         appointments = Appointment.objects.select_related('time_slot', 'service').filter(
-            time_slot__salon_id=salon_id,
+            time_slot__salon=salon,
             time_slot__date=slot.date
         ).exclude(status='otkazano')
 
