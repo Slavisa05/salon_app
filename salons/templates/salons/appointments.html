@@ -1,0 +1,78 @@
+{% extends "salons/salons_base.html" %}
+
+{% block title %}
+    Termini
+{% endblock title %}
+
+{% block description %}
+    Termini frizerskog salona
+{% endblock description %}
+
+{% block content %}
+    <main>
+        <section class="salons-appoitments-section">
+            <!-- Hidden element za prenošenje salon ID-a u JS -->
+            <div id="salon-id" data-salon-id="{{ salon.id }}" style="display: none;"></div>
+
+            <div class="schedule-container">
+                <div class="calendar-section">
+                    <h2>Izaberi datum</h2>
+                    <div id="calendar">
+                        <!-- FullCalendar će biti ovde -->
+                    </div>
+                </div>
+                
+                <div class="timeline-section">
+                    <div class="timeline-header">
+                        <h2>Termini za: <span id="selected-date"></span></h2>
+                    </div>
+                    
+                    <div id="time-slots-container" class="time-slots-grid">
+                        <!-- Slotovi će biti ovde -->
+                        <div class="loading">Učitavanje...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="appointment-modal" class="modal" aria-hidden="true">
+            <div class="modal-backdrop" data-modal-close></div>
+            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="appointment-title">
+                <div class="modal-header">
+                    <h3 id="appointment-title">Detalji termina</h3>
+                    <button type="button" class="modal-close" data-modal-close aria-label="Zatvori">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-row">
+                        <span class="modal-label">Klijent</span>
+                        <span id="appointment-customer" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-label">Usluga</span>
+                        <span id="appointment-service" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-label">Status</span>
+                        <span id="appointment-status" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-label">Datum</span>
+                        <span id="appointment-date" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-label">Vreme</span>
+                        <span id="appointment-time" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-label">Napomena</span>
+                        <span id="appointment-notes" class="modal-value">-</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="appointment-cancel" class="modal-action danger">Otkaži termin</button>
+                </div>
+            </div>
+        </div>
+    </main>
+{% csrf_token %}
+{% endblock content %}

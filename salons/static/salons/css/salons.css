@@ -284,3 +284,272 @@ body.sidebar-collapsed .sidebar-toggle-text {
 }
 
 /* USLUGE */
+.schedule-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    padding: 20px;
+}
+
+.calendar-section, .timeline-section {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.timeline-section {
+    padding: 16px;
+}
+
+#time-slots-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.time-slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.time-slot:hover {
+    transform: translateX(5px);
+}
+
+.time-slot-dostupan {
+    background: #10b981;
+    color: white;
+}
+
+.time-slot-zauzet {
+    background: #ef4444;
+    color: white;
+}
+
+.time-slot-blokiran {
+    background: #6b7280;
+    color: white;
+    cursor: not-allowed;
+}
+
+.time-slot .time {
+    font-weight: 600;
+}
+
+.time-slot .status {
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+/* FULLCALENDAR */
+.calendar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.calendar-section h2 {
+    font-size: 1.2rem;
+    letter-spacing: 0.3px;
+    margin-bottom: 0;
+}
+
+#calendar .fc {
+    font-family: "Poppins", "Montserrat", "Segoe UI", sans-serif;
+    color: #0f172a;
+}
+
+#calendar .fc-toolbar {
+    gap: 10px;
+}
+
+#calendar .fc-toolbar-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+#calendar .fc-button {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #0f172a;
+    border-radius: 10px;
+    padding: 6px 10px;
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    transition: all 180ms ease;
+}
+
+#calendar .fc-button:hover {
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+#calendar .fc-button-primary:not(:disabled).fc-button-active,
+#calendar .fc-button-primary:not(:disabled):active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+#calendar .fc-daygrid-day {
+    border-color: #e2e8f0;
+}
+
+#calendar .fc-col-header-cell {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+#calendar .fc-col-header-cell-cushion {
+    padding: 8px 6px;
+    font-weight: 600;
+    color: #334155;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+#calendar .fc-daygrid-day-number {
+    font-weight: 600;
+    color: #475569;
+}
+
+#calendar .fc-day-selected .fc-daygrid-day-frame {
+    background: rgba(37, 99, 235, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.45);
+}
+
+#calendar .fc-day-selected .fc-daygrid-day-number {
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+#calendar .fc-day-selected.fc-day-today .fc-daygrid-day-frame {
+    background: rgba(37, 99, 235, 0.2);
+}
+
+#calendar .fc-day-today {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+#calendar .fc-daygrid-day:hover {
+    background: rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+}
+
+#calendar .fc-scrollgrid {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+/* MODAL */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal.is-open {
+    display: flex;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.modal-card {
+    position: relative;
+    width: min(460px, 92vw);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px 20px 20px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    z-index: 1;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: #475569;
+}
+
+.modal-body {
+    display: grid;
+    gap: 10px;
+}
+
+.modal-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.modal-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+}
+
+.modal-value {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.modal-action {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.modal-action.danger {
+    background: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.25);
+}
+
+.modal-action.danger:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+}
