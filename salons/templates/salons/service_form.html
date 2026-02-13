@@ -1,0 +1,64 @@
+{% extends "salons/salons_base.html" %}
+{% load static %}
+
+{% block title %}
+    Forma za uslugu
+{% endblock title %}
+
+{% block description %}
+    Dodavanje usluge
+{% endblock description %}
+
+{% block content %}
+    <main>
+        <section>
+            <h1>{% if service %}Menjanje usluge{% else %}Dodavanje Nove Usluge{% endif %}</h1>
+
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% endif %}
+
+            <div class="service-container">       
+                <form class="service-form" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            {{ form.name.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            {{ form.description.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            {{ form.price.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.duration.id_for_label }}">{{ form.duration.label }}</label>
+                        {{ form.duration }}
+                        {% if form.duration.errors %}
+                            {{ form.duration.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div class="inline-div">
+                        <button type="submit" class="main-btn">Sačuvaj</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+{% endblock content %}

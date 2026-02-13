@@ -447,3 +447,42 @@ document.addEventListener('DOMContentLoaded', () => {
         window.salonScheduler = new SalonScheduler(salonName);
     }
 });
+
+// ADD NEW SERVICE
+const addNewService = document.querySelector('#addNewService');
+if (addNewService) {
+    addNewService.addEventListener('click', () => {
+        const targetUrl = addNewService.dataset.url;
+        if (targetUrl) {
+            window.location.href = targetUrl;
+        }
+    });
+}
+
+// EDIT SERVICE
+const editBtns = document.querySelectorAll('.card-btn');
+if (editBtns) {
+    editBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const targetUrl = e.target.dataset.url;
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            }
+        });
+    });
+}
+
+// DELETE SERVICE
+const deleteBtns = document.querySelectorAll('.delete-btn');
+if (deleteBtns) {
+    deleteBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (confirm('Da li ste sigurni da želite da obrišete ovu uslugu?')) {
+                const targetUrl = e.target.dataset.url;
+                if (targetUrl) {
+                    window.location.href = targetUrl;
+                }
+            }
+        });
+    });
+}

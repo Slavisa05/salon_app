@@ -11,22 +11,33 @@
 {% block content %}
     <main>
         <section class="services-page-section">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <div class="inline-div space-between">
                 <h1>Moje usluge</h1>
-                <button class="main-btn">+ dodaj novu uslugu</button>
+                <button class="main-btn" id="addNewService" data-url="{% url 'salon:create_service' salon_name=salon.name %}">+ dodaj novu uslugu</button>
             </div>
 
             <div class="dashboard-appoitments"> 
-                <div class="card services">
-                    <h3>Klasicno sisanje</h3>
-                    <p>Vreme trajanja: 30 min</p>
-                    <p>Cena: 500 din</p>
+                {% for service in services %}
+                    <div class="card services">
+                        <h3>{{ service.name }}</h3>
+                        <p>{{ service.description }}</p>
+                        <p>Cena: {{ service.price }} din</p>
+                        <p>Vreme trajanja: {{ service.duration }} min</p>
 
-                    <div class="inline-div">
-                        <button class="card-btn">izmeni uslugu</button>
-                        <button class="delete-btn">obrisi uslugu</button>
+                        <div class="inline-div">
+                            <button class="card-btn" data-url="{% url 'salon:update_service' salon_name=salon.name service_id=service.id %}">izmeni uslugu</button>
+                            <button class="delete-btn" data-url="{% url 'salon:delete_service' salon_name=salon.name service_id=service.id %}">obrisi uslugu</button>
+                        </div>
                     </div>
-                </div>
+                {% endfor %}
             </div>
         </section>
     </main>

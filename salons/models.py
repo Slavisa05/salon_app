@@ -106,6 +106,7 @@ class Appointment(models.Model):
         ('nije se pojavio', 'Nije se pojavio'),
     ]
 
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name='appointments')
     time_slot = models.OneToOneField(TimeSlot, on_delete=models.CASCADE, related_name='appointment') 
     customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, related_name='appointments')

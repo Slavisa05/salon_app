@@ -11,6 +11,7 @@
 {% block content %}
     <main>
         <section class="salon-dashboard-section">
+            <!--
             <div class="dashboard-header">
                 <div class="dashboard-stats">
                     <div class="stat-icon" aria-hidden="true">
@@ -44,69 +45,32 @@
                     <p>Fade sisanje</p>
                 </div>
             </div>
+            -->
 
             <h1>Termini za danas</h1>
             <div class="dashboard-appoitments">
-                <div class="card dashboard">
-                    <div class="card-left">
-                        <h3>Slavisa Arsenijevic</h3>
-                        <p class="card-meta">
-                            <span class="card-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 7h12M6 12h12M6 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            </span>
-                            Klasicno sisanje
-                        </p>
-                        <p class="card-meta">
-                            <span class="card-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" /><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            </span>
-                            Vreme: 11:30h
-                        </p>
+                {% for appointment in appointments %}
+                    <div class="card dashboard">
+                        <div class="card-left">
+                            <h3>{{ appointment.customer.username }}</h3>
+                            <p class="card-meta">
+                                <span class="card-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 7h12M6 12h12M6 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                </span>
+                                {{ appointment.service.name }}
+                            </p>
+                            <p class="card-meta">
+                                <span class="card-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" /><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                </span>
+                                {{ appointment.time_slot.begin_time|time:"H:i" }}
+                            </p>
+                        </div>
+                        <div class="card-right">
+                            <p class="status-text done">{{ appointment.status }}</p>
+                        </div>
                     </div>
-                    <div class="card-right">
-                        <p class="status-text done">Zavrseno</p>
-                    </div>
-                </div>
-                <div class="card dashboard">
-                    <div class="card-left">
-                        <h3>Andrija Matic</h3>
-                        <p class="card-meta">
-                            <span class="card-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 7h12M6 12h12M6 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            </span>
-                            Fejd sisanje
-                        </p>
-                        <p class="card-meta">
-                            <span class="card-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" /><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            </span>
-                            Vreme: 12:00h
-                        </p>
-                    </div>
-                    <div class="card-right">
-                        <p class="status-text progress">U toku</p>
-                    </div>
-                </div>
-                <div class="card dashboard">
-                    <div class="card-left">
-                        <h3>Filip Lukovic</h3>
-                        <p class="card-meta">
-                            <span class="card-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 7h12M6 12h12M6 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            </span>
-                            Klasicno sisanje
-                        </p>
-                        <p class="card-meta">
-                            <span class="card-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" /><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                            </span>
-                            Vreme: 13:00h
-                        </p>
-                    </div>
-                    <div class="card-right">
-                        <p class="status-text todo">Predstojeći</p>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
         </section>
     </main>
