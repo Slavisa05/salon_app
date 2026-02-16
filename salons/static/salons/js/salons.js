@@ -1,4 +1,10 @@
-console.log('salons.js');
+// LOGOUT BTN
+const logoutBtn = document.querySelector('#logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        window.location.href = '/';
+    });
+}
 
 const sidebarToggle = document.getElementById('sidebarToggle');
 
@@ -91,7 +97,7 @@ class SalonScheduler {
         const dateStr = this.formatDate(date);
         
         try {
-            const response = await fetch(`/${this.salonName}/slots/?date=${dateStr}`);
+            const response = await fetch(`/salons/${encodeURIComponent(this.salonName)}/slots/?date=${dateStr}`);
             
             if (!response.ok) {
                 throw new Error('Failed to fetch slots');
@@ -200,10 +206,19 @@ class SalonScheduler {
 
     async fetchAppointmentDetails(slotId) {
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/appointment/`);
+            const response = await fetch(`/salons/${encodeURIComponent(this.salonName)}/slots/${slotId}/appointment/`);
 
             if (!response.ok) {
-                throw new Error('Failed to fetch appointment details');
+                let errorMessage = 'Greška pri učitavanju detalja termina';
+                try {
+                    const errorData = await response.json();
+                    if (errorData && errorData.error) {
+                        errorMessage = errorData.error;
+                    }
+                } catch (parseError) {
+                    // Ignore JSON parse errors and keep default message.
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -214,7 +229,7 @@ class SalonScheduler {
             this.openModal();
         } catch (error) {
             console.error('Error loading appointment details:', error);
-            this.showError('Greška pri učitavanju detalja termina');
+            this.showError(error.message || 'Greška pri učitavanju detalja termina');
         }
     }
 
@@ -289,7 +304,7 @@ class SalonScheduler {
 
     async cancelAppointment(slotId) {
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/appointment/cancel/`, {
+            const response = await fetch(`/salons/${encodeURIComponent(this.salonName)}/slots/${slotId}/appointment/cancel/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -335,7 +350,7 @@ class SalonScheduler {
             return;
         }
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/block/`, {
+            const response = await fetch(`/salons/${encodeURIComponent(this.salonName)}/slots/${slotId}/block/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -364,7 +379,7 @@ class SalonScheduler {
             return;
         }
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/unblock/`, {
+            const response = await fetch(`/salons/${encodeURIComponent(this.salonName)}/slots/${slotId}/unblock/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

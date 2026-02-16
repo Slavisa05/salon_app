@@ -18,11 +18,28 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('salons.urls')),
+    path('', views.landing_page, name='landing'),
+
+    path('book/<str:salon_name>/', 
+         views.customer_appointment, 
+         name='customer_appointment'),
+    
+    path('appointment/<int:appointment_id>/confirmation/', 
+         views.appointment_confirmation, 
+         name='appointment_confirmation'),
+    
+    # API
+    path('api/available-timeslots/', 
+         views.available_timeslots_api, 
+         name='available_timeslots_api'),
+
+    path('salons/', include('salons.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

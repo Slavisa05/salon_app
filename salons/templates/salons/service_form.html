@@ -6,13 +6,13 @@
 {% endblock title %}
 
 {% block description %}
-    Dodavanje usluge
+    {% if is_editing %}Izmena usluge{% else %}Dodavanje usluge{% endif %}
 {% endblock description %}
 
 {% block content %}
     <main>
-        <section>
-            <h1>{% if service %}Menjanje usluge{% else %}Dodavanje Nove Usluge{% endif %}</h1>
+        <section class="form-section">
+            <h1>{% if is_editing %}Menjanje usluge{% else %}Dodavanje Nove Usluge{% endif %}</h1>
 
             {% if form.non_field_errors %}
                 {{ form.non_field_errors }}

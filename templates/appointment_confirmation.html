@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Potvrda rezervacije - {{ appointment.salon.name }}
+{% endblock title %}
+
+{% block description %}
+    Vaša rezervacija je uspešno kreirana. Detalji o terminu.
+{% endblock description %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block content %}
+<main class="confirmation-main">
+    <section class="confirmation-section">
+        <div class="confirmation-container">
+            
+            <!-- Success Icon & Message -->
+            <div class="confirmation-header">
+                <div class="success-icon">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="#4caf50" stroke-width="2" fill="none"/>
+                        <path d="M8 12L11 15L16 9" stroke="#4caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h1>Rezervacija uspešna!</h1>
+                <p class="confirmation-subtitle">
+                    Vaš termin je uspešno zakazan. Potvrda je poslata na vašu email adresu.
+                </p>
+            </div>
+
+            <!-- Appointment Details Card -->
+            <div class="confirmation-card">
+                <div class="card-header">
+                    <h2>Detalji vaše rezervacije</h2>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Salon Info -->
+                    <div class="detail-row salon-info">
+                        {% if appointment.salon.image %}
+                            <img src="{{ appointment.salon.image.url }}" alt="{{ appointment.salon.name }}" class="salon-logo">
+                        {% endif %}
+                        <div>
+                            <h3>{{ appointment.salon.name }}</h3>
+                            <p class="salon-address">📍 {{ appointment.salon.address }}</p>
+                            <p class="salon-phone">📞 {{ appointment.salon.phone }}</p>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Appointment Details -->
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-icon">📅</div>
+                            <div class="detail-content">
+                                <span class="detail-label">Datum</span>
+                                <span class="detail-value">{{ appointment.time_slot.date|date:"d. F Y." }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">⏰</div>
+                            <div class="detail-content">
+                                <span class="detail-label">Vreme</span>
+                                <span class="detail-value">{{ appointment.time_slot.begin_time|time:"H:i" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">✂️</div>
+                            <div class="detail-content">
+                                <span class="detail-label">Usluga</span>
+                                <span class="detail-value">{{ appointment.service.name }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">⏱️</div>
+                            <div class="detail-content">
+                                <span class="detail-label">Trajanje</span>
+                                <span class="detail-value">{{ appointment.service.duration }} min</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">💰</div>
+                            <div class="detail-content">
+                                <span class="detail-label">Cena</span>
+                                <span class="detail-value price">{{ appointment.service.price }} RSD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if appointment.notes %}
+                        <div class="divider"></div>
+                        <div class="notes-section">
+                            <h4>📝 Vaša napomena:</h4>
+                            <p>{{ appointment.notes }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="info-box">
+                <div class="info-icon">ℹ️</div>
+                <div class="info-content">
+                    <h4>Potvrdni email</h4>
+                    <p>
+                        Detalji o vašoj rezervaciji poslati su na: 
+                        <strong>{{ appointment.get_customer_email }}</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Important Notice -->
+            <div class="notice-box">
+                <h4>⚠️ Važne napomene:</h4>
+                <ul>
+                    <li>Molimo vas da stignete <strong>5 minuta ranije</strong></li>
+                    <li>Ako želite da otkažete ili pomerite termin, kontaktirajte salon</li>
+                    <li>Status vaše rezervacije: <span class="status-badge {{ appointment.status }}">{{ appointment.get_status_display }}</span></li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="confirmation-actions">
+                <a href="{% url 'landing' %}" class="btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.5523 5.44772 21 6 21H9M19 10L21 12M19 10V20C19 20.5523 18.5523 21 18 21H15M9 21C9 21 9 18 9 16C9 14 10 14 12 14C14 14 15 14 15 16C15 18 15 21 15 21M9 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Nazad na početnu
+                </a>
+
+                {% if user.is_authenticated %}
+                    <a href="#" class="btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Moje rezervacije
+                    </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+</main>
+{% endblock content %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}

@@ -108,7 +108,12 @@ class Appointment(models.Model):
 
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name='appointments')
     time_slot = models.OneToOneField(TimeSlot, on_delete=models.CASCADE, related_name='appointment') 
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments', null=True, blank=True)
+    guest_name = models.CharField(max_length=100, blank=True)
+    guest_email = models.EmailField(blank=True)
+    guest_phone = models.CharField(max_length=20, blank=True)
+
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, related_name='appointments')
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='na čekanju')
     notes = models.TextField(blank=True)
@@ -198,7 +203,8 @@ class Appointment(models.Model):
             if slot.status == 'blokiran':
                 raise ValidationError('Izabrani termin je blokiran.')
 
-            if hasattr(slot, 'appointment') and slot.appointment_id != self.pk:
+            appointment = getattr(slot, 'appointment', None)
+            if appointment and appointment.pk != self.pk:
                 raise ValidationError('Izabrani termin je već zauzet.')
 
             if slot.status == 'zauzet' and not hasattr(slot, 'appointment'):
@@ -244,6 +250,7 @@ class Appointment(models.Model):
                 slot.save(update_fields=['status'])
     
     def __str__(self):
-        return f"{self.customer.username} - {self.time_slot.date} {self.time_slot.begin_time}"
+        customer_name = self.get_customer_name()
+        return f"{customer_name} - {self.time_slot.date} {self.time_slot.begin_time}"
 
 

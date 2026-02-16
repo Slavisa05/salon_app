@@ -166,9 +166,13 @@ def appointment_details(request, salon_name, slot_id):
     if not appointment:
         return JsonResponse({'error': 'Termin nije pronađen'}, status=404)
     service_name = appointment.service.name if appointment.service else None
+    if appointment.customer:
+        customer_name = appointment.customer.username
+    else:
+        customer_name = appointment.guest_name or appointment.guest_email or '-'
 
     return JsonResponse({
-        'customer': appointment.customer.username,
+        'customer': customer_name,
         'service': service_name,
         'status': appointment.status,
         'notes': appointment.notes,

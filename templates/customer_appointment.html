@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Zakaži termin - {{ salon.name }}
+{% endblock title %}
+
+{% block description %}
+    Ovo je stranica gde musterije zakazuju svoje termine
+{% endblock description %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block content %}
+    <main class="booking-main">
+        <section class="customer-appointment-section">
+            <div class="booking-container">
+                <!-- Salon Info Header -->
+                <div class="salon-info-header">
+                    <div class="salon-info-content">
+                        {% if salon.image %}
+                            <img src="{{ salon.image.url }}" alt="{{ salon.name }}" class="salon-avatar">
+                        {% endif %}
+                        <div>
+                            <h1>{{ salon.name }}</h1>
+                            <p class="salon-address">📍 {{ salon.address }}</p>
+                            <p class="salon-phone">📞 {{ salon.phone }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <form 
+                    method="post" 
+                    id="bookingForm" 
+                    class="booking-form"
+                    data-salon-id="{{ salon.id }}"
+                    data-salon-name="{{ salon.name }}"
+                    data-api-url="{% url 'available_timeslots_api' %}">
+                    
+                    {% csrf_token %}
+                    
+                    <!-- Messages -->
+                    {% if messages %}
+                        <div class="messages-container">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Step 1: Usluga -->
+                    <div class="form-section">
+                        <div class="step-header">
+                            <span class="step-number">1</span>
+                            <h2>Izaberite uslugu</h2>
+                        </div>
+                        
+                        <div class="services-grid">
+                            {% for service in services %}
+                                <label class="service-card-option">
+                                    <input 
+                                        type="radio" 
+                                        name="{{ form.service.name }}" 
+                                        value="{{ service.id }}"
+                                        data-duration="{{ service.duration }}"
+                                        data-price="{{ service.price }}"
+                                        data-service-name="{{ service.name }}"
+                                        required>
+                                    <div class="service-card">
+                                        <h3>{{ service.name }}</h3>
+                                        {% if service.description %}
+                                            <p class="service-description">{{ service.description }}</p>
+                                        {% endif %}
+                                        <div class="service-details">
+                                            <span class="price">💰 {{ service.price }} RSD</span>
+                                            <span class="duration">⏱️ {{ service.duration }} min</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if form.service.errors %}
+                            <span class="error-message">{{ form.service.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Step 2: Datum -->
+                    <div class="form-section" id="step2" style="display: none;">
+                        <div class="step-header">
+                            <span class="step-number">2</span>
+                            <h2>Izaberite datum</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <span class="error-message">{{ form.date.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Vreme -->
+                    <div class="form-section" id="step3" style="display: none;">
+                        <div class="step-header">
+                            <span class="step-number">3</span>
+                            <h2>Izaberite vreme</h2>
+                        </div>
+                        
+                        <div id="timeslotsLoading" class="loading-spinner" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Učitavanje dostupnih termina...</p>
+                        </div>
+                        
+                        <div id="timeslotsList" class="timeslots-grid"></div>
+                        
+                        {{ form.time_slot }}
+                        {% if form.time_slot.errors %}
+                            <span class="error-message">{{ form.time_slot.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Step 4: Vaši podaci -->
+                    <div class="form-section" id="step4" style="display: none;">
+                        <div class="step-header">
+                            <span class="step-number">4</span>
+                            <h2>Vaši podaci</h2>
+                        </div>
+                        
+                        {% if not user.is_authenticated %}
+                            <div class="info-box">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <p>Potrebni su nam vaši kontakt podaci kako bismo vas obavestili o terminu.</p>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.guest_name.id_for_label }}">
+                                {{ form.guest_name.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.guest_name }}
+                            {% if form.guest_name.errors %}
+                                <span class="error-message">{{ form.guest_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.guest_email.id_for_label }}">
+                                    {{ form.guest_email.label }} <span class="required">*</span>
+                                </label>
+                                {{ form.guest_email }}
+                                {% if form.guest_email.errors %}
+                                    <span class="error-message">{{ form.guest_email.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.guest_phone.id_for_label }}">
+                                    {{ form.guest_phone.label }} <span class="required">*</span>
+                                </label>
+                                {{ form.guest_phone }}
+                                {% if form.guest_phone.errors %}
+                                    <span class="error-message">{{ form.guest_phone.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}">
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                            ✅ Potvrdi rezervaciju
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Booking Summary Sidebar -->
+                <aside class="booking-summary">
+                    <h3>Pregled rezervacije</h3>
+                    <div id="summaryContent" class="summary-content">
+                        <p class="text-muted">Izaberite opcije da vidite pregled</p>
+                    </div>
+                    <div class="summary-total" id="summaryTotal" style="display: none;">
+                        <strong>Ukupno:</strong>
+                        <span id="totalPrice">0 RSD</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+{% endblock content %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}

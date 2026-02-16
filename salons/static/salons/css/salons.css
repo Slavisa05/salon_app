@@ -31,7 +31,7 @@ body.sidebar-collapsed .salons-sidebar {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
-    height: 95%;
+    height: 100%;
     padding: 20px;
     position: relative;
 }
@@ -131,6 +131,9 @@ body.sidebar-collapsed .sidebar-toggle-text {
 }
 
 /* DASHBOARD */
+.salon-dashboard-section {
+    padding-top: 5vh;
+}
 
 .dashboard-header {
     display: flex;
@@ -185,6 +188,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
 }
 
 .dashboard-appoitments {
+    padding-top: 5vh;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
@@ -194,6 +198,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
+    gap: 20px;
     padding: 14px;
     border: none;
     border-radius: 10px;
@@ -325,7 +330,19 @@ body.sidebar-collapsed .sidebar-toggle-text {
     border-color: #bfdbfe;
 }
 
+.form-section {
+    padding-top: 5vh;
+}
+
 /* USLUGE */
+.services-page-section {
+    padding-top: 5vh;
+} 
+
+.salons-appoitments-section {
+    padding-top: 5vh;
+}
+
 .schedule-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -344,12 +361,17 @@ body.sidebar-collapsed .sidebar-toggle-text {
     padding: 16px;
 }
 
+.timeline-header {
+    margin-bottom: 20px;
+}
+
 #time-slots-container {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 600px;
+    max-height: 70vh;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .time-slot {
@@ -598,6 +620,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
 
 /* FORM */
 .salon-form {
+    padding-top: 3vh;
     width: 70vw;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
