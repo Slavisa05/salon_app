@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Landing page
+{% endblock title %}
+
+{% block description %}
+    Ovo je landing page
+{% endblock description %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block content %}
+    <main>
+        <section class="landing-page-section">
+            <div class="centered-div">
+                <h1>Dobrodošli u aplikaciju za frizere</h1>
+                <p>Olakšajte sebi život bilo da ste frizer ili mušterija</p>
+            </div>
+
+            <div class="landing-grid">
+                <div class="centered-div">
+                    <strong class="subheading">Manje telefona, više šišanja</strong>
+                    <p>Klijenti sami zakazuju termine online, bez poziva i poruka.</p>
+                </div>
+
+                <div class="centered-div">
+                    <strong class="subheading">Potpuna kontrola nad rasporedom</strong>
+                    <p>Pregled termina na jednom mestu.</p>
+                </div>
+
+                <div class="centered-div">
+                    <strong class="subheading">Zakazivanje za 30 sekundi</strong>
+                    <p>Izaberi salon, uslugu, termin i potvrdi — bez čekanja i dopisivanja.</p>
+                </div>
+
+                <div class="centered-div">
+                    <strong class="subheading">Podsetnici da ne zaboraviš termin</strong>
+                    <p>Automatske notifikacije kako nikada ne bi propustio šišanje.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-register-section">
+            <div class="landing-register-grid">
+                <div class="centered-div">
+                    <h2>Frizer si?</h2>
+                    <p>Registruj nalog i otvori salon lako i jednostavno!</p>
+                    <button class="main-btn" id="landingRegisterBtn" data-url="{% url 'register' %}">registruj se</button>
+                </div>
+
+                <div class="centered-div">
+                    <h2>Mušterija si, a ne želiš da registruješ nalog?</h2>
+                    <p>Pronađi salon i zakaži šišanje u par klikova!</p>
+                    <button class="sec-btn" id="landingCustomerBtn" data-url="{% url 'customers:home' %}">zakaži šišanje</button>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock content %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}

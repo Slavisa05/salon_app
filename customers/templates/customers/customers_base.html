@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customers/css/customers.css' %}">
+{% endblock extra_css %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}
+
+{% block extra_js %}
+    <script src="{% static 'customers/js/customers.js' %}"></script>
+{% endblock extra_js %}

@@ -91,7 +91,7 @@ class SalonScheduler {
         const dateStr = this.formatDate(date);
         
         try {
-            const response = await fetch(`/${this.salonName}/slots/?date=${dateStr}`);
+            const response = await fetch(`/salons/${this.salonName}/slots/?date=${dateStr}`);
             
             if (!response.ok) {
                 throw new Error('Failed to fetch slots');
@@ -200,7 +200,7 @@ class SalonScheduler {
 
     async fetchAppointmentDetails(slotId) {
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/appointment/`);
+            const response = await fetch(`/salons/${this.salonName}/slots/${slotId}/appointment/`);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch appointment details');
@@ -289,7 +289,7 @@ class SalonScheduler {
 
     async cancelAppointment(slotId) {
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/appointment/cancel/`, {
+            const response = await fetch(`/salons/${this.salonName}/slots/${slotId}/appointment/cancel/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -335,7 +335,7 @@ class SalonScheduler {
             return;
         }
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/block/`, {
+            const response = await fetch(`/salons/${this.salonName}/slots/${slotId}/block/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -364,7 +364,7 @@ class SalonScheduler {
             return;
         }
         try {
-            const response = await fetch(`/${this.salonName}/slots/${slotId}/unblock/`, {
+            const response = await fetch(`/salons/${this.salonName}/slots/${slotId}/unblock/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

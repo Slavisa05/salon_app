@@ -49,6 +49,10 @@
 
             <h1>Termini za danas</h1>
             <div class="dashboard-appoitments">
+                {% if not appointments %}
+                    <h3>Nemate termina danas.</h3>
+                {% endif %}
+
                 {% for appointment in appointments %}
                     <div class="card dashboard">
                         <div class="card-left">

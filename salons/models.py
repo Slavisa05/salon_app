@@ -12,6 +12,8 @@ class Salon(models.Model):
     address = models.CharField(max_length=200, unique=True)
     phone = models.CharField(max_length=20, unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     # ovde mozda dodati i komentare i ocene
 
     class Meta:

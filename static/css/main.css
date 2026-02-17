@@ -18,6 +18,12 @@
     --gradient-delete: linear-gradient(135deg, #EF4444, #DC2626);
 }
 
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -81,7 +87,7 @@ button {
 }
 
 .sec-btn {
-    padding: 10px 20px;
+    padding: 20px;
     border: 2px solid var(--secondary);
     background-color: transparent;
     color: var(--secondary);
@@ -90,6 +96,10 @@ button {
 
 .sec-btn:hover {
     box-shadow: 2px 2px 5px var(--secondary);
+}
+
+.sec-btn.pad {
+    padding: 10px;
 }
 
 .card-btn {
@@ -132,4 +142,259 @@ button {
 .inline-div.space-between {
     width: 100%;
     justify-content: space-between;
+}
+
+.centered-div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 25px;
+    text-align: center;
+}
+
+/* MESSAGES */
+/* MESSAGES */
+.messages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: min(420px, calc(100vw - 40px));
+    margin: 0;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.message {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(2px);
+    pointer-events: auto;
+}
+
+.message.success {
+    color: #166534;
+    background: #dcfce7;
+    border-color: #86efac;
+    border-left: 4px solid #22c55e;
+}
+
+.message.error {
+    color: #991b1b;
+    background: #fee2e2;
+    border-color: #fecaca;
+    border-left: 4px solid #ef4444;
+}
+
+.message.warning {
+    color: #92400e;
+    background: #fef3c7;
+    border-color: #fde68a;
+    border-left: 4px solid #f59e0b;
+}
+
+.message.info {
+    color: #1e3a8a;
+    background: #dbeafe;
+    border-color: #bfdbfe;
+    border-left: 4px solid #3b82f6;
+}
+
+/* NAVBAR */
+.nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 30px 5vw 30px 5vw;
+    color: var(--primary);
+    background-color: rgb(255, 255, 255, 0.8);
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-style: italic;
+}
+
+/* FOOTER */
+.footer {
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary);
+    color: var(--bg);
+}
+
+/* LANDING PAGE */
+.landing-page-section {
+    padding: 25vh 5vw 10vh 5vw;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: column;
+    background-image: var(--gradient270);
+    color: var(--bg);
+}
+
+.landing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.landing-grid div {
+    padding: 20px;
+    border-radius: 10px;
+    background-color: rgb(255, 255, 255, 0.5);
+    color: var(--text);
+    box-shadow: 2px 2px 5px var(--bg);
+}
+
+.subheading {
+    font-size: 1.2rem;
+}
+
+.landing-register-section {
+    padding: 10vh 5vw;
+}
+
+.landing-register-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 50px;
+}
+
+/* REGISTER PAGE */
+.register-page-section {
+    padding-top: 15vh;
+    min-height: 110vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.register-container {
+    padding-top: 50px;
+    width: 70vw;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-form {
+    width: 40vw;
+    height: 65vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.register-form input::placeholder, .register-form textarea::placeholder {
+    color: var(--bg);
+    opacity: 0.5;
+}
+
+.register-form div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.password-field-wrap {
+    position: relative;
+}
+
+.password-field-wrap .form-control {
+    padding-right: 45px;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    top: 34px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgb(249, 250, 251, 0.4);
+    border-radius: 50%;
+    background-color: rgb(249, 250, 251, 0.1);
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--bg);
+    text-transform: none;
+    transition: transform 180ms ease, background-color 220ms ease, border-color 220ms ease;
+}
+
+.password-toggle-btn:hover {
+    transform: scale(1.08);
+    background-color: rgb(249, 250, 251, 0.22);
+    border-color: rgb(249, 250, 251, 0.75);
+}
+
+.password-toggle-btn .eye-icon {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.password-toggle-btn .eye-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.password-toggle-btn .eye-open {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.password-toggle-btn .eye-closed {
+    opacity: 0;
+    transform: scale(0.75);
+}
+
+.password-toggle-btn.is-visible .eye-open {
+    opacity: 0;
+    transform: scale(0.75);
+}
+
+.password-toggle-btn.is-visible .eye-closed {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.form-control {
+    padding: 10px 5px;
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    background-image: var(--gradient90);
+    color: var(--bg);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+/* CHOOSE ROLE */
+.choose-role-section {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 30px;
 }

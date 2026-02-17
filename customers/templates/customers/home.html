@@ -1,0 +1,37 @@
+{% extends "customers/customers_base.html" %}
+
+{% block title %}
+    Pocetna za musterije
+{% endblock title %}
+
+{% block description %}
+    Izaberite salon i jednostavno zakazite termin
+{% endblock description %}
+
+{% block content %}
+     <main>
+        <section class="home-section">
+            <h1>Dostupni saloni</h1>
+    
+            <div class="grid-3-col">
+                {% for salon in salons %}
+                <div class="home-salon-card clickable-card" data-url="">
+                    <h2>{{ salon.name }}</h2>
+                    <img src="{{ salon.image.url }}" alt="{{ salon.name }}">
+                    <p>{{ salon.description }}</p>
+
+                    <div class="inline-div space-between">
+                        <p>{{ salon.address }}</p>
+                        <p>{{ salon.phone }}</p>
+                    </div>
+
+                    <div class="link inline-div wide-centered">
+                        <p>Zakaži termin</p>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6 12H18M18 12L13 7M18 12L13 17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+{% endblock content %}

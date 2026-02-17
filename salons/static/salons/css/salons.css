@@ -8,8 +8,11 @@ body {
     transition: padding-left 200ms ease;
 }
 
-/* SIDEBAR */
+section {
+    padding-top: 5vh;
+}
 
+/* SIDEBAR */
 .salons-sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -131,7 +134,6 @@ body.sidebar-collapsed .sidebar-toggle-text {
 }
 
 /* DASHBOARD */
-
 .dashboard-header {
     display: flex;
     align-items: center;
@@ -188,12 +190,14 @@ body.sidebar-collapsed .sidebar-toggle-text {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    padding-top: 5vh;
 }
 
 .card {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
+    gap: 20px;
     padding: 14px;
     border: none;
     border-radius: 10px;
@@ -286,45 +290,6 @@ body.sidebar-collapsed .sidebar-toggle-text {
     color: var(--success);
 }
 
-/* MESSAGES */
-.messages {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 12px 0 18px 0;
-}
-
-.message {
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    border: 1px solid transparent;
-}
-
-.message.success {
-    color: #166534;
-    background: #dcfce7;
-    border-color: #86efac;
-}
-
-.message.error {
-    color: #991b1b;
-    background: #fee2e2;
-    border-color: #fecaca;
-}
-
-.message.warning {
-    color: #92400e;
-    background: #fef3c7;
-    border-color: #fde68a;
-}
-
-.message.info {
-    color: #1e3a8a;
-    background: #dbeafe;
-    border-color: #bfdbfe;
-}
-
 /* USLUGE */
 .schedule-container {
     display: grid;
@@ -350,6 +315,8 @@ body.sidebar-collapsed .sidebar-toggle-text {
     gap: 8px;
     max-height: 600px;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 20px;
 }
 
 .time-slot {
@@ -603,6 +570,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
     grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
     gap: 16px 28px;
     align-items: start;
+    padding-top: 5vh;
 }
 
 .salon-form-group {
@@ -610,16 +578,6 @@ body.sidebar-collapsed .sidebar-toggle-text {
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-.form-control {
-    padding: 10px 5px;
-    border: 1px solid var(--primary);
-    border-radius: 10px;
-    background-image: var(--gradient90);
-    color: var(--bg);
-    font-size: 1rem;
-    font-family: inherit;
 }
 
 .salon-form-image {
@@ -654,6 +612,7 @@ body.sidebar-collapsed .sidebar-toggle-text {
 
 .salon-form-image-btn {
     margin-top: 6px;
+    cursor: pointer;
 }
 
 .salon-form-actions {

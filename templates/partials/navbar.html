@@ -1,0 +1,21 @@
+{% load static %}
+
+<nav class="nav">
+    <div class="nav-container">
+        <div>
+            <strong class="logo">SALON APP</strong>
+        </div>
+
+        <div class="inline-div">
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="sec-btn" id="logoutBtn">Izloguj se</button>
+                </form>
+            {%else%}
+            <button class="main-btn" id="loginBtn" data-url="{% url 'login' %}">Uloguj se</button>
+            <button class="sec-btn" id="registerBtn" data-url="{% url 'register' %}">Registruj se</button>
+            {% endif %}
+        </div>
+    </div>
+</nav>

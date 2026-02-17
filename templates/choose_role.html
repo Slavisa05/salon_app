@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Izaberi role
+{% endblock title %}
+
+{% block description %}
+    Frizer ili musterija
+{% endblock description %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block content %}
+    <main>
+        <section class="choose-role-section">
+            <div class="centered-div">
+                <h1>Izaberite ulogu</h1>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <button class="main-btn" type="submit" name="role" value="musterija">
+                    Customer
+                </button>
+                
+                <button class="sec-btn" type="submit" name="role" value="frizer">
+                    Frizer
+                </button>
+            </form>
+        </section>
+    </main>
+{% endblock content %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}

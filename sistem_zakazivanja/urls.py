@@ -17,11 +17,19 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
+from sistem_zakazivanja import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('salons.urls')),
+    path('login/', views.login_page, name='login'),
+    path('register/', views.register_page, name='register'),
+    path('register/choose_role/', views.choose_role, name='choose_role'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
+    path('', views.landing, name='landing'),
+    path('salons/', include('salons.urls')),
+    path('customers/', include('customers.urls')),
 ]
 
 if settings.DEBUG:
