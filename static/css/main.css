@@ -398,3 +398,13 @@ button {
     flex-direction: column;
     gap: 30px;
 }
+
+/* PENDING APPROVAL */
+.pending-approval-section {
+    height: 91vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+}

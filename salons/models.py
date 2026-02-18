@@ -61,8 +61,9 @@ class SalonWorkingHours(models.Model):
         ordering = ['salon', 'day'] 
     
     def clean(self):
-        if self.is_working and self.opening_time >= self.closing_time:
-            raise ValidationError("Vreme otvaranja mora biti pre zatvaranja")
+        if self.is_working and self.opening_time and self.closing_time:
+            if self.opening_time >= self.closing_time:
+                raise ValidationError("Vreme otvaranja mora biti pre zatvaranja")
     
     def __str__(self):
         if self.is_working:

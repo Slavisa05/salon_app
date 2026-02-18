@@ -1,9 +1,11 @@
 from django import forms
+from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
-from .models import Salon, Service
+from datetime import datetime
+from .models import Salon, Service, SalonWorkingHours
 
 
 class SalonForm(forms.ModelForm):
@@ -32,7 +34,6 @@ class SalonForm(forms.ModelForm):
             'address': 'Adresa salona',
             'phone': 'Telefon salona',
         }
-
     
 class ServiceForm(forms.ModelForm):
     class Meta:

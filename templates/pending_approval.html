@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Podesavanja profila
+{% endblock title %}
+
+{% block description %}
+    Podesavanje frizerskog salona
+{% endblock description %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block content %}
+    <main>
+        <section class="pending-approval-section">
+            <h1>Čekanje na odobrenje salona - {{ salon.name }}</h1>
+            <p>Biće vam poslat email statusa salona kada administrator pregleda vaš salon.</p>
+            <button class="main-btn" id="backToHome" data-url="{% url 'customers:home' %}">nazad na početnu</button>
+        </section>
+    </main>
+{% endblock content %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}

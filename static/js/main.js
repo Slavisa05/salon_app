@@ -34,6 +34,15 @@ if (registerBtn && registerBtn.dataset.url) {
     });
 }
 
+const backToHome = document.querySelector('#backToHome');
+if (backToHome) {
+    backToHome.addEventListener('click', e => {
+        e.preventDefault();
+
+        window.location.href = backToHome.dataset.url;
+    });
+}
+
 const passwordToggleButtons = document.querySelectorAll('.password-toggle-btn');
 if (passwordToggleButtons.length) {
     passwordToggleButtons.forEach((button) => {

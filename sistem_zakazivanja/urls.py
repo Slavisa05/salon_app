@@ -24,8 +24,10 @@ from sistem_zakazivanja import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', views.login_page, name='login'),
+    path('redirect_after_login/', views.redirect_after_login, name='redirect_after_login'),
     path('register/', views.register_page, name='register'),
     path('register/choose_role/', views.choose_role, name='choose_role'),
+    path('pending_apporval/', views.pending_approval_view, name='pending_approval'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
     path('', views.landing, name='landing'),
     path('salons/', include('salons.urls')),

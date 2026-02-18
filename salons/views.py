@@ -5,16 +5,20 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from datetime import date, timedelta, datetime
 from django.contrib import messages
+from sistem_zakazivanja.decorators import require_barber_with_approved_salon
+from sistem_zakazivanja.models import UserProfile
 from .models import Salon, TimeSlot, Appointment, Service
-from .utils import generate_time_slots_for_date
+from .utils import generate_time_slots_for_date, create_default_working_hours, generate_slots_for_next_months, regenerate_future_slots_after_hours_change
 from .forms import SalonForm, ServiceForm
 
 
+@require_barber_with_approved_salon
 def salon_dashboard(request, salon_name):
     salon = get_object_or_404(Salon, name=salon_name)
 
-    if salon.owner != request.user:
-        return HttpResponseForbidden("Nemate dozvolu da vidite dashboard od ovog salona")
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da vidite dashboard ovog salona")
     
     # Filtriraj termine samo za danas i sortiraj po vremenu
     today = date.today()
@@ -25,20 +29,27 @@ def salon_dashboard(request, salon_name):
     return render(request, 'salons/dashboard.html', {'salon': salon, 'appointments': appointments})
 
 
+@require_barber_with_approved_salon
 def services_page(request, salon_name):
     salon = get_object_or_404(Salon, name=salon_name)
 
-    if salon.owner != request.user:
-        return HttpResponseForbidden("Nemate dozvolu da vidite stranicu za usluge ovog salon")
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da vidite stranicu za usluge ovog salon")
     
     services = salon.services.all()
 
     return render(request, 'salons/services.html', {'salon': salon, 'services': services})
 
 
+@require_barber_with_approved_salon
 def appointments_page(request, salon_name):
     salon = get_object_or_404(Salon, name=salon_name)
     today = date.today()
+
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da vidite termine ovog salona")
 
     context = {
         'salon': salon,
@@ -47,9 +58,15 @@ def appointments_page(request, salon_name):
 
     return render(request, 'salons/appointments.html', context)
 
+
+@require_barber_with_approved_salon
 def get_slots_for_date(request, salon_name):
     salon = get_object_or_404(Salon, name=salon_name)
     date_str = request.GET.get('date')
+    
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da generišete slotove za ovaj salon!")
 
     try: 
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -107,10 +124,15 @@ def get_slots_for_date(request, salon_name):
     return JsonResponse({'slots': slots_data})
 
 
+@require_barber_with_approved_salon
 @require_POST
 def block_slot(request, salon_name, slot_id):
     salon = get_object_or_404(Salon, name=salon_name)
     slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
+
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da blokirate slotove za ovaj salon")
 
     if hasattr(slot, 'appointment'):
         return JsonResponse({'error': 'Slot već ima termin'}, status=400)
@@ -120,10 +142,15 @@ def block_slot(request, salon_name, slot_id):
     return JsonResponse({'status': 'ok'})
 
 
+@require_barber_with_approved_salon
 @require_POST
 def unblock_slot(request, salon_name, slot_id):
     salon = get_object_or_404(Salon, name=salon_name)
     slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
+
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da odblokirate slotove za ovaj salon")
 
     if hasattr(slot, 'appointment'):
         return JsonResponse({'error': 'Slot već ima termin'}, status=400)
@@ -133,6 +160,7 @@ def unblock_slot(request, salon_name, slot_id):
     return JsonResponse({'status': 'ok'})
 
 
+@require_barber_with_approved_salon
 def appointment_details(request, salon_name, slot_id):
     salon = get_object_or_404(Salon, name=salon_name)
     slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
@@ -177,10 +205,15 @@ def appointment_details(request, salon_name, slot_id):
     })
 
 
+@require_barber_with_approved_salon
 @require_POST
 def cancel_appointment(request, salon_name, slot_id):
     salon = get_object_or_404(Salon, name=salon_name)
     slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
+
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da otkazujete termine za ovaj salon")
 
     appointment = None
     if hasattr(slot, 'appointment'):
@@ -218,11 +251,27 @@ def cancel_appointment(request, salon_name, slot_id):
     appointment.save(update_fields=['status'])
     return JsonResponse({'status': 'ok'})
 
+
 # SALON FORMS
 @login_required
 def create_salon(request):
-    if hasattr(request.user, 'salon'):
-        return redirect('salon:salon_dashboard', salon_name=request.user.salon.name)
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if profile.role != 'frizer':
+        messages.error(request, 'Samo frizeri mogu kreirati salone.')
+        return redirect('home')
+
+    try:
+        salon = Salon.objects.get(owner=request.user)
+        
+        if not salon.is_approved:
+            messages.info(request, 'Vaš salon već čeka odobrenje.')
+            return redirect('pending_approval')
+        else:
+            messages.info(request, 'Već imate salon.')
+            return redirect('salons:salon_dashboard', salon_name=salon.name)
+    except Salon.DoesNotExist:
+        pass
 
     if request.method == 'POST':
         form = SalonForm(request.POST, request.FILES)
@@ -230,10 +279,18 @@ def create_salon(request):
             try:
                 salon = form.save(commit=False)
                 salon.owner = request.user
+                salon.is_approved = False
+                salon.is_active = False
                 salon.save()
 
-                messages.success(request, f'Salon "{salon.name}" kreiran uspešno!')
-                return redirect('salon:salon_dashboard', salon_name=salon.name)
+
+                messages.success(
+                    request,
+                    f'Salon "{salon.name}" je uspešno kreiran! '
+                    f'Čeka se odobrenje administratora.'
+                )
+
+                return redirect('pending_approval')
             except Exception as e:
                 messages.error(request, f'Greška pri kreiranju salona: {str(e)}')
     else:
@@ -242,20 +299,25 @@ def create_salon(request):
     return render(request, 'salons/salon_form.html', {'form': form})
 
 
-@login_required
+@require_barber_with_approved_salon
 def edit_salon(request, salon_name):
     salon = get_object_or_404(Salon, name=salon_name)
 
-    if salon.owner != request.user:
-        return HttpResponseForbidden("Nemate dozvolu da menjate ovaj salon")
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da menjate ovaj salon")
 
     if request.method == 'POST':
         form = SalonForm(request.POST, request.FILES, instance=salon)
         if form.is_valid():
             try:
                 form.save()
-                messages.success(request, f'Salon "{salon.name}" ažuriran uspešno!')
-                return redirect('salon:edit_salon', salon_name=salon.name)
+                
+                messages.success(
+                    request,
+                    'Salon je ažuriran! '
+                )
+                return redirect('salons:edit_salon', salon_name=salon.name)
             except Exception as e:
                 messages.error(request, f'Greška pri ažuriranju salona: {str(e)}')
         else:
@@ -267,12 +329,13 @@ def edit_salon(request, salon_name):
 
 
 # SERVICE FORMS
-@login_required
+@require_barber_with_approved_salon
 def create_service(request, salon_name):
     salon = get_object_or_404(Salon, name=salon_name, owner=request.user)
 
-    if salon.owner != request.user:
-        return HttpResponseForbidden("nemate dozvolu da dodajete usluge ovom salonu")
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da dodajete usluge ovom salonu")
     
     if request.method == 'POST':
         form = ServiceForm(request.POST)
@@ -282,7 +345,7 @@ def create_service(request, salon_name):
                 service.salon = salon
                 service.save()
                 messages.success(request, f'Usluga "{service.name}" uspešno dodata!')
-                return redirect('salon:services_page', salon_name=salon.name)
+                return redirect('salons:services_page', salon_name=salon.name)
             except Exception as e:
                 messages.error(request, f'Greška pri dodavanju usluge: {str(e)}')
         else:
@@ -298,13 +361,14 @@ def create_service(request, salon_name):
     return render(request, 'salons/service_form.html', context)
 
 
-@login_required
+@require_barber_with_approved_salon
 def update_service(request, salon_name, service_id):
     salon = get_object_or_404(Salon, name=salon_name, owner=request.user)
     service = get_object_or_404(Service, salon=salon, id=service_id)
 
-    if salon.owner != request.user:
-        return HttpResponseForbidden("nemate dozvolu da menjate usluge ovog salona")
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da menjate usluge ovog salona")
     
     if request.method == 'POST':
         form = ServiceForm(request.POST, instance=service)
@@ -312,7 +376,7 @@ def update_service(request, salon_name, service_id):
             try:
                 form.save()
                 messages.success(request, f'Usluga "{service.name}" uspešno ažurirana!')
-                return redirect('salon:services_page', salon_name=salon.name)
+                return redirect('salons:services_page', salon_name=salon.name)
             except Exception as e:
                 messages.error(request, f'Greška pri ažuriranju usluge: {str(e)}')
         else:
@@ -328,13 +392,14 @@ def update_service(request, salon_name, service_id):
     return render(request, 'salons/service_form.html', context)
 
 
-@login_required
+@require_barber_with_approved_salon
 def delete_service(request, salon_name, service_id):
     salon = get_object_or_404(Salon, name=salon_name, owner=request.user)
     service = get_object_or_404(Service, salon=salon, id=service_id)
 
-    if salon.owner != request.user:
-        return HttpResponseForbidden("nemate dozvolu da brisete usluge ovog salona")
+    if not (request.user.is_superuser or request.user.is_staff):
+        if salon.owner != request.user:
+            return HttpResponseForbidden("Nemate dozvolu da brisete usluge ovog salona")
     
     try:
         service_name = service.name
@@ -343,6 +408,4 @@ def delete_service(request, salon_name, service_id):
     except Exception as e:
         messages.error(request, f'Greška pri brisanju usluge: {str(e)}')
     
-    return redirect('salon:services_page', salon_name=salon.name)
-
-
+    return redirect('salons:services_page', salon_name=salon.name)

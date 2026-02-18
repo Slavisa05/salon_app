@@ -21,7 +21,7 @@
 
             <div class="inline-div space-between">
                 <h1>Moje usluge</h1>
-                <button class="main-btn" id="addNewService" data-url="{% url 'salon:create_service' salon_name=salon.name %}">+ dodaj novu uslugu</button>
+                <button class="main-btn" id="addNewService" data-url="{% url 'salons:create_service' salon_name=salon.name %}">+ dodaj novu uslugu</button>
             </div>
 
             <div class="dashboard-appoitments"> 
@@ -33,8 +33,8 @@
                         <p>Vreme trajanja: {{ service.duration }} min</p>
 
                         <div class="inline-div">
-                            <button class="card-btn" data-url="{% url 'salon:update_service' salon_name=salon.name service_id=service.id %}">izmeni uslugu</button>
-                            <button class="delete-btn" data-url="{% url 'salon:delete_service' salon_name=salon.name service_id=service.id %}">obrisi uslugu</button>
+                            <button class="card-btn" data-url="{% url 'salons:update_service' salon_name=salon.name service_id=service.id %}">izmeni uslugu</button>
+                            <button class="delete-btn" data-url="{% url 'salons:delete_service' salon_name=salon.name service_id=service.id %}">obrisi uslugu</button>
                         </div>
                     </div>
                 {% endfor %}
