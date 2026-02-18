@@ -114,7 +114,7 @@ def choose_role(request):
             return redirect('customers:home')
         else:  
             messages.info(request, 'Pravljenje salona...')
-            return redirect('salon:create_salon')
+            return redirect('salons:create_salon')
     
 
     return render(request, 'choose_role.html')

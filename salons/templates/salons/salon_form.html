@@ -20,7 +20,7 @@
             </div>
         {% endif %}
 
-        <h1>{% if salon %}Izmeni salona{% else %}Kreiraj salon{% endif %}</h1>
+        <h1>{% if salon %}Izmeni salon{% else %}Kreiraj salon{% endif %}</h1>
 
         {% if form.non_field_errors %}
             {{ form.non_field_errors }}
@@ -46,17 +46,41 @@
             </div>
 
             <div class="salon-form-group salon-form-image">
-                <span class="salon-form-image-title">{{ form.image.label }}</span>
-                <div class="salon-form-image-preview">
-                    {% if salon and salon.image and 'barber_default' not in salon.image.name|lower %}
-                        <img src="{{ salon.image.url }}" alt="Salon image">
-                    {% else %}
-                        <img src="{% static 'salons/img/barber_default.jpg' %}" alt="Default salon image">
+                <label>{{ form.image.label }}</label>
+                
+                <div class="image-upload-container">
+                    <!-- Preview slika -->
+                    <div class="image-preview" id="image-preview">
+                        {% if is_edit and salon.image %}
+                            <img src="{{ salon.image.url }}" alt="{{ salon.name }}" id="preview-img">
+                        {% else %}
+                            <img src="{% static 'salons/img/barber_default.jpg' %}" alt="Default salon image" id="preview-img">
+                        {% endif %}
+                        
+                        <!-- Overlay sa ikonama (pojavljuje se na hover) -->
+                        <div class="image-overlay">
+                            <button type="button" class="image-btn" id="change-image-btn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                <span>{% if is_edit %}Promeni sliku{% else %}Dodaj sliku{% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden file input -->
+                    {{ form.image }}
+                    
+                    <!-- Info tekst -->
+                    <p class="image-help-text">
+                        Preporučena veličina: 800x600px. Maksimalno 5MB. Format: JPG, PNG
+                    </p>
+                    
+                    {% if form.image.errors %}
+                        <span class="error">{{ form.image.errors.0 }}</span>
                     {% endif %}
                 </div>
-                <label for="{{ form.image.id_for_label }}" class="sec-btn salon-form-image-btn">
-                    Promeni sliku
-                </label>
             </div>
 
             <div class="salon-form-group">

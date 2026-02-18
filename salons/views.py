@@ -325,7 +325,7 @@ def edit_salon(request, salon_name):
     else:
         form = SalonForm(instance=salon)
 
-    return render(request, 'salons/salon_form.html', {'form': form, 'salon': salon})
+    return render(request, 'salons/salon_form.html', {'form': form, 'salon': salon, 'is_edit': True})
 
 
 # SERVICE FORMS

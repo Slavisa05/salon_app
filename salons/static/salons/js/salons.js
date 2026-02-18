@@ -486,3 +486,164 @@ if (deleteBtns) {
         });
     });
 }
+
+/**
+ * ============================================
+ * IMAGE UPLOAD - PREVIEW
+ * ============================================
+ * Prikazuje preview slike pre upload-a
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Pozovi funkcije samo ako postoje
+    if (typeof initWorkingHoursToggle === 'function') {
+        initWorkingHoursToggle();
+    }
+    if (typeof initImageUpload === 'function') {
+        initImageUpload();
+    }
+});
+
+
+/**
+ * Inicijalizuje image upload funkcionalnost
+ */
+function initImageUpload() {
+    const imageInput = document.getElementById('id_image');
+    const previewContainer = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const changeImageBtn = document.getElementById('change-image-btn');
+    
+    console.log('initImageUpload called');
+    console.log('imageInput:', imageInput);
+    console.log('previewContainer:', previewContainer);
+    console.log('previewImg:', previewImg);
+    console.log('changeImageBtn:', changeImageBtn);
+    
+    if (!imageInput || !previewContainer || !previewImg) {
+        // Nema image upload-a na ovoj stranici
+        console.warn('Missing required elements for image upload');
+        return;
+    }
+    
+    /**
+     * Klik na preview ili dugme otvara file picker
+     */
+    previewContainer.addEventListener('click', function(e) {
+        console.log('Preview container clicked');
+        if (e.target !== changeImageBtn && !changeImageBtn?.contains(e.target)) {
+            imageInput.click();
+        }
+    });
+    
+    if (changeImageBtn) {
+        changeImageBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Change image button clicked');
+            imageInput.click();
+        });
+    }
+    
+    /**
+     * Kada korisnik izabere fajl, prikaži preview
+     */
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (!file) {
+            return;
+        }
+        
+        // Validacija
+        if (!validateImageFile(file)) {
+            return;
+        }
+        
+        // Prikaži preview
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            previewImg.src = event.target.result;
+            
+            // Animacija
+            previewImg.style.opacity = '0';
+            setTimeout(() => {
+                previewImg.style.transition = 'opacity 0.3s ease';
+                previewImg.style.opacity = '1';
+            }, 50);
+        };
+        
+        reader.readAsDataURL(file);
+    });
+    
+    /**
+     * Drag & Drop support (bonus)
+     */
+    previewContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        previewContainer.style.borderColor = '#6366F1';
+        previewContainer.style.background = 'rgba(99, 102, 241, 0.05)';
+    });
+    
+    previewContainer.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        previewContainer.style.borderColor = '#cbd5e0';
+        previewContainer.style.background = '#f0f0f0';
+    });
+    
+    previewContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        previewContainer.style.borderColor = '#cbd5e0';
+        previewContainer.style.background = '#f0f0f0';
+        
+        const file = e.dataTransfer.files[0];
+        
+        if (file && validateImageFile(file)) {
+            // Dodaj fajl u input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            imageInput.files = dataTransfer.files;
+            
+            // Trigger change event
+            const changeEvent = new Event('change', { bubbles: true });
+            imageInput.dispatchEvent(changeEvent);
+        }
+    });
+}
+
+
+/**
+ * Validacija image fajla
+ */
+function validateImageFile(file) {
+    // Proveri tip fajla
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        alert('Molimo odaberite sliku (JPG, PNG ili WebP)');
+        return false;
+    }
+    
+    // Proveri veličinu (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB u bajtovima
+    if (file.size > maxSize) {
+        alert('Slika je prevelika! Maksimalna veličina je 5MB.');
+        return false;
+    }
+    
+    return true;
+}
+
+
+/**
+ * Format file size za prikaz
+ */
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
