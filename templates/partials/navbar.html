@@ -3,15 +3,27 @@
 <nav class="nav">
     <div class="nav-container">
         <div>
-            <strong class="logo">SALON APP</strong>
+            <a href="{% url 'landing' %}">
+                <strong class="logo">SALON APP</strong>
+            </a>
         </div>
 
         <div class="inline-div">
             {% if user.is_authenticated %}
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="sec-btn" id="logoutBtn">Izloguj se</button>
-                </form>
+                <a class="nav-link" href="{% url 'customers:home' %}">Zakaži</a>
+                <div class="user-menu" aria-label="Korisnički meni">
+                    <button type="button" class="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
+                        <span class="user-menu-username">{{ user.username }}</span>
+                        <span class="user-menu-arrow" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="user-menu-dropdown">
+                        <a class="user-menu-link" href="{% url 'user_edit' %}">Izmeni profil</a>
+                        <form method="post" action="{% url 'logout' %}" class="user-menu-form">
+                            {% csrf_token %}
+                            <button type="submit" class="user-menu-link user-menu-logout" id="logoutBtn">Izloguj se</button>
+                        </form>
+                    </div>
+                </div>
             {%else%}
             <button class="main-btn" id="loginBtn" data-url="{% url 'login' %}">Uloguj se</button>
             <button class="sec-btn" id="registerBtn" data-url="{% url 'register' %}">Registruj se</button>

@@ -1,5 +1,3 @@
-console.log('salons.js');
-
 const sidebarToggle = document.getElementById('sidebarToggle');
 
 if (sidebarToggle) {

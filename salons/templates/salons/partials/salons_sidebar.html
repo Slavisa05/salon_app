@@ -34,12 +34,10 @@
 
 
         <div>
-            <button class="sec-btn pad" id="logoutBtn" aria-label="Logout">
-                <svg id="logoutIcon" class="logout-icon" viewBox="0 0 24 24" width="30" height="30" role="img" aria-hidden="true" focusable="false" fill="currentColor">
-                    <path d="M10 3h7a2 2 0 0 1 2 2v4h-2V5H10v14h7v-4h2v4a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
-                    <path d="M13 8l5 4-5 4v-3H5v-2h8V8z" />
-                </svg>
-            </button>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="sec-btn pad" id="logoutBtn" aria-label="Logout" type="submit">Odjavi se</button>
+            </form>
         </div>
     </div>
 </nav>

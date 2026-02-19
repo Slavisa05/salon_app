@@ -14,6 +14,10 @@ class SalonScheduleForm(forms.Form):
         choices=[('15', 'Na 15 minuta'), ('30', 'Na 30 minuta'), ('60', 'Na 60 minuta')],
         label='Generisanje termina',
         initial='30',
+        error_messages={
+            'required': 'Izaberite interval termina.',
+            'invalid_choice': 'Izabrani interval nije validan.',
+        },
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -32,8 +36,12 @@ class SalonScheduleForm(forms.Form):
             )
             self.fields[f'{day_key}_opening_time'] = forms.TimeField(
                 required=False,
+                label='Od',
                 initial=day_initial.get('opening_time'),
                 input_formats=['%H:%M', '%H:%M:%S'],
+                error_messages={
+                    'invalid': 'Unesite ispravno vreme (HH:MM).',
+                },
                 widget=forms.TimeInput(
                     format='%H:%M',
                     attrs={'type': 'time', 'class': 'form-control working-time-input'}
@@ -41,8 +49,12 @@ class SalonScheduleForm(forms.Form):
             )
             self.fields[f'{day_key}_closing_time'] = forms.TimeField(
                 required=False,
+                label='Do',
                 initial=day_initial.get('closing_time'),
                 input_formats=['%H:%M', '%H:%M:%S'],
+                error_messages={
+                    'invalid': 'Unesite ispravno vreme (HH:MM).',
+                },
                 widget=forms.TimeInput(
                     format='%H:%M',
                     attrs={'type': 'time', 'class': 'form-control working-time-input'}
@@ -122,7 +134,31 @@ class SalonForm(forms.ModelForm):
             }),
         }
         labels = {
+            'name': 'Naziv salona',
+            'address': 'Adresa',
+            'phone': 'Telefon',
+            'description': 'Opis salona',
             'image': 'Slika salona',
+        }
+        error_messages = {
+            'name': {
+                'required': 'Unesite naziv salona.',
+                'unique': 'Salon sa ovim nazivom već postoji.',
+            },
+            'address': {
+                'required': 'Unesite adresu salona.',
+                'unique': 'Salon sa ovom adresom već postoji.',
+            },
+            'phone': {
+                'unique': 'Ovaj broj telefona je već zauzet.',
+            },
+            'description': {
+                'required': 'Unesite opis salona.',
+                'unique': 'Salon sa ovim opisom već postoji.',
+            },
+            'image': {
+                'invalid': 'Otpremljeni fajl nije validna slika.',
+            },
         }
     
     def clean_image(self):
@@ -189,25 +225,42 @@ class ServiceForm(forms.ModelForm):
         labels = {
             'name': 'Naziv usluge',
             'description': 'Opis usluge',
-            'image': 'Cena usluge',
-            'address': 'Trajanje usluge (u minutima)',
+            'price': 'Cena usluge',
+            'duration': 'Trajanje usluge (u minutima)',
+        }
+        error_messages = {
+            'name': {
+                'required': 'Unesite naziv usluge.',
+                'unique': 'Usluga sa ovim nazivom već postoji.',
+            },
+            'description': {
+                'required': 'Unesite opis usluge.',
+            },
+            'price': {
+                'required': 'Unesite cenu usluge.',
+                'invalid': 'Unesite ispravnu cenu.',
+            },
+            'duration': {
+                'required': 'Unesite trajanje usluge.',
+                'invalid': 'Unesite ispravno trajanje.',
+            },
         }
 
-        def clean_duration(self):
-            duration = self.clean_data.get('duration')
+    def clean_duration(self):
+        duration = self.cleaned_data.get('duration')
 
-            if duration and duration % 5 != 0:
-                raise forms.ValidationError('Trajanje mora biti deljivo sa 5 minuta.')
-            
-            if duration and duration < 5:
-                raise forms.ValidationError('Trajanje mora biti najmanje 5 minuta.')
-            
-            return duration
+        if duration and duration % 5 != 0:
+            raise forms.ValidationError('Trajanje mora biti deljivo sa 5 minuta.')
         
-        def clean_price(self):
-            price = self.cleaned_data.get('price')
+        if duration and duration < 5:
+            raise forms.ValidationError('Trajanje mora biti najmanje 5 minuta.')
+        
+        return duration
 
-            if price and price <= 0:
-                raise forms.ValidationError('Cena mora biti veća od 0.')
-            
-            return price
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+
+        if price is not None and price <= 0:
+            raise forms.ValidationError('Cena mora biti veća od 0.')
+        
+        return price

@@ -209,6 +209,7 @@ button {
 /* NAVBAR */
 .nav {
     position: fixed;
+    z-index: 99999;
     top: 0; left: 0; right: 0;
     padding: 30px 5vw 30px 5vw;
     color: var(--primary);
@@ -222,8 +223,96 @@ button {
 }
 
 .logo {
+    color: var(--primary);
     font-size: 1.5rem;
     font-style: italic;
+}
+
+.nav-link {
+    color: var(--text);
+    text-transform: uppercase;
+    transition: all 200ms ease;
+}
+
+.nav-link:hover {
+    color: var(--primary);
+}
+
+.user-menu {
+    position: relative;
+}
+
+.user-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    user-select: none;
+    color: var(--primary);
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.user-menu-username {
+    color: var(--primary);
+}
+
+.user-menu-arrow {
+    color: var(--primary);
+    transition: transform 180ms ease;
+}
+
+.user-menu.is-open .user-menu-arrow {
+    transform: rotate(180deg);
+}
+
+.user-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 170px;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    background: var(--bg);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.14);
+    display: none;
+    overflow: hidden;
+    z-index: 20;
+}
+
+.user-menu.is-open .user-menu-dropdown {
+    display: block;
+}
+
+.user-menu-link {
+    width: 100%;
+    display: block;
+    padding: 10px 12px;
+    background: transparent;
+    border: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+    text-align: left;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.user-menu-link:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+}
+
+.user-menu-form {
+    margin: 0;
+}
+
+.user-menu-logout {
+    font: inherit;
 }
 
 /* FOOTER */
@@ -407,4 +496,13 @@ button {
     justify-content: center;
     flex-direction: column;
     gap: 20px;
+}
+
+/* EDIT USER */
+.edit-user-page-section {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-top: 15vh;
+    min-height: 120vh;
 }

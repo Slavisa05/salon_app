@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RegistrationForm, CustomLoginForm
+from .forms import RegistrationForm, CustomLoginForm, UserEditForm
 from .models import UserProfile
 from salons.models import Salon
 
@@ -54,8 +55,7 @@ def redirect_after_login(request):
             if not salon.is_approved:
                 messages.info(request, 'Vaš salon još uvek čeka odobrenje.')
                 return redirect('pending_approval')
-            
-            messages.success(request, f'Dobrodošli nazad, {user.username}!')
+
             return redirect('salons:salon_dashboard', salon_name=salon.name)
         
         except Salon.DoesNotExist:
@@ -138,3 +138,20 @@ def pending_approval_view(request):
         return redirect("dashboard")
 
     return render(request, "pending_approval.html", {"salon": salon})
+
+
+@login_required
+def userEditForm(request):
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=request.user, user=request.user)
+        if form.is_valid():
+            user = form.save()
+            if getattr(form, 'password_changed', False):
+                update_session_auth_hash(request, user)
+            messages.success(request, 'Podaci profila su uspešno ažurirani.')
+            return redirect('user_edit')
+        messages.error(request, 'Molimo vas ispravite greške u formi.')
+    else:
+        form = UserEditForm(instance=request.user, user=request.user)
+
+    return render(request, 'edit_user.html', {'form': form})

@@ -67,6 +67,28 @@ if (noNavLink) {
     });
 }
 
+const userMenu = document.querySelector('.user-menu');
+if (userMenu) {
+    const userMenuTrigger = userMenu.querySelector('.user-menu-trigger');
+
+    if (userMenuTrigger) {
+        userMenuTrigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const isOpen = userMenu.classList.toggle('is-open');
+            userMenuTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!userMenu.contains(event.target)) {
+                userMenu.classList.remove('is-open');
+                userMenuTrigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+}
+
 const flashMessages = document.querySelectorAll('.messages .message');
 if (flashMessages.length) {
     setTimeout(() => {

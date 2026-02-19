@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Izmena profila
+{% endblock title %}
+
+{% block description %}
+    Izmena korisničkih podataka
+{% endblock description %}
+
+{% block nav %}
+    {% include "partials/navbar.html" %}
+{% endblock nav %}
+
+{% block content %}
+    <main>
+        <section class="edit-user-page-section">
+            <h1>Izmeni podatke</h1>
+
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% endif %}
+
+            <div class="register-page-container">
+                <form class="register-form" method="POST">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            {{ form.username.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            {{ form.email.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            {{ form.first_name.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            {{ form.last_name.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            {{ form.phone.errors }}
+                        {% endif %}
+                    </div>
+
+                    <h3>Promena lozinke (opciono)</h3>
+
+                    <div>
+                        <label for="{{ form.old_password.id_for_label }}">{{ form.old_password.label }}</label>
+                        {{ form.old_password }}
+                        {% if form.old_password.errors %}
+                            {{ form.old_password.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.new_password1.id_for_label }}">{{ form.new_password1.label }}</label>
+                        {{ form.new_password1 }}
+                        {% if form.new_password1.errors %}
+                            {{ form.new_password1.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.new_password2.id_for_label }}">{{ form.new_password2.label }}</label>
+                        {{ form.new_password2 }}
+                        {% if form.new_password2.errors %}
+                            {{ form.new_password2.errors }}
+                        {% endif %}
+                    </div>
+
+                    <div class="inline-div">
+                        <button type="submit" class="main-btn">Sačuvaj izmene</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+{% endblock content %}
+
+{% block footer %}
+    {% include "partials/footer.html" %}
+{% endblock footer %}
