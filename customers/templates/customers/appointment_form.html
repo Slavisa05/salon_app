@@ -1,0 +1,53 @@
+{% extends "customers/customers_base.html" %}
+
+{% block title %}
+    Zakazivanje termina
+{% endblock title %}
+
+{% block description %}
+    Zakazivanje termina za salon {{ salon.name }}
+{% endblock description %}
+
+{% block content %}
+<main>
+    <section class="booking-section" id="booking-form-root" data-slots-url="{% url 'customers:available_slots' salon_name=salon.name %}">
+        <h1>{{ salon.name }} - zakazivanje</h1>
+
+        <form class="booking-form" method="POST">
+            {% csrf_token %}
+
+            <div>
+                <label for="service">Usluga</label>
+                <select name="service" id="service" class="form-control" required>
+                    <option value="">Izaberite uslugu</option>
+                    {% for service in services %}
+                        <option value="{{ service.id }}">{{ service.name }} ({{ service.duration }} min - {{ service.price }} RSD)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="booking-date">Datum</label>
+                <input type="date" id="booking-date" name="date" class="form-control" min="{{ today }}" value="{{ today }}" required>
+            </div>
+
+            <div>
+                <label for="slot">Slobodni termini</label>
+                <select name="slot" id="slot" class="form-control" required>
+                    <option value="">Učitavanje termina...</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="notes">Napomena (opciono)</label>
+                <textarea id="notes" name="notes" rows="4" class="form-control" placeholder="Napišite napomenu ako je potrebno"></textarea>
+            </div>
+
+            <div class="inline-div">
+                <button type="submit" class="main-btn" id="book-submit">Zakaži termin</button>
+                <a class="nav-link" href="{% url 'customers:home' %}">Nazad na salone</a>
+            </div>
+        </form>
+    </section>
+</main>
+{% endblock content %}

@@ -33,11 +33,12 @@
         </div>
 
 
-        <div>
+        <div class="sidebar-div">
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button class="sec-btn pad" id="logoutBtn" aria-label="Logout" type="submit">Odjavi se</button>
             </form>
+            <button class="sec-btn pad" id="userEditBtn" type="button" data-url="{% url 'user_edit' %}">Izmeni profil</button>
         </div>
     </div>
 </nav>

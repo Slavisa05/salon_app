@@ -39,6 +39,13 @@ body.sidebar-collapsed .salons-sidebar {
     position: relative;
 }
 
+.sidebar-div {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .sidebar-toggle {
     position: absolute;
     top: 12px;

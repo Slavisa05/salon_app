@@ -1,10 +1,18 @@
 const sidebarToggle = document.getElementById('sidebarToggle');
+const userEditBtn = document.getElementById('userEditBtn');
 
 if (sidebarToggle) {
 	sidebarToggle.addEventListener('click', () => {
 		const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
 		sidebarToggle.setAttribute('aria-expanded', String(!isCollapsed));
 	});
+}
+
+if (userEditBtn && userEditBtn.dataset.url) {
+    userEditBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.location.href = userEditBtn.dataset.url;
+    });
 }
 
 // slots

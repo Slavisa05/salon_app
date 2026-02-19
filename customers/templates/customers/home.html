@@ -15,7 +15,7 @@
     
             <div class="grid-3-col">
                 {% for salon in salons %}
-                <div class="home-salon-card clickable-card" data-url="">
+                <div class="home-salon-card clickable-card" data-url="{% url 'customers:booking_form' salon_name=salon.name %}" role="button" tabindex="0">
                     <h2>{{ salon.name }}</h2>
                     <img src="{{ salon.image.url }}" alt="{{ salon.name }}">
                     <p>{{ salon.description }}</p>

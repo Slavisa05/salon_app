@@ -52,3 +52,35 @@
     height: 32px;
     transition: all 300ms ease;
 }
+
+/* BOOKING PAGE */
+.booking-section {
+    padding-top: 15vh;
+    min-height: 91vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.booking-form {
+    width: min(700px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.booking-form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.booking-form select.form-control {
+    color: var(--bg);
+}
+
+.booking-form select.form-control option {
+    background: var(--bg);
+    color: var(--text);
+}
