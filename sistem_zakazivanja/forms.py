@@ -136,6 +136,12 @@ class RegistrationForm(UserCreationForm):
             profile.save()
         
         return user
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Email adresa je već zauzeta.')
+        return email
     
 
 class UserEditForm(forms.ModelForm):
@@ -262,6 +268,16 @@ class UserEditForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         self.password_changed = False
+        self.email_change_requested = False
+        self.pending_email = ''
+
+        current_email = self.instance.email
+        requested_email = self.cleaned_data.get('email', current_email)
+
+        if requested_email != current_email:
+            self.email_change_requested = True
+            self.pending_email = requested_email
+            user.email = current_email
 
         new_password = self.cleaned_data.get('new_password1')
         if new_password:
@@ -273,6 +289,10 @@ class UserEditForm(forms.ModelForm):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.phone = self.cleaned_data.get('phone', '')
+
+        if self.email_change_requested:
+            profile.pending_email = self.pending_email
+            profile.email_verified = False
 
         if commit:
             profile.save()

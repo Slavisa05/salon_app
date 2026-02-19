@@ -24,6 +24,7 @@ from sistem_zakazivanja import views
 urlpatterns = [
     path('', views.landing, name='landing'),
     path('login/', views.login_page, name='login'),
+    path('email/verify/<str:token>/', views.verify_email, name='verify_email'),
     path('user/edit/', views.userEditForm, name='user_edit'),
     path('redirect_after_login/', views.redirect_after_login, name='redirect_after_login'),
     path('register/', views.register_page, name='register'),
