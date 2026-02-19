@@ -74,12 +74,26 @@
                     
                     <!-- Info tekst -->
                     <p class="image-help-text">
-                        Preporučena veličina: 800x600px. Maksimalno 5MB. Format: JPG, PNG
+                        Slika mora biti tačno 500x500 piksela. Maksimalno 5MB. Format: JPG, PNG ili WebP.
                     </p>
                     
                     {% if form.image.errors %}
                         <span class="error">{{ form.image.errors.0 }}</span>
                     {% endif %}
+                </div>
+            </div>
+
+            <div class="crop-modal" id="crop-modal" aria-hidden="true">
+                <div class="crop-modal-content" role="dialog" aria-modal="true" aria-labelledby="crop-modal-title">
+                    <h3 id="crop-modal-title">Ispeci sliku</h3>
+                    <p class="crop-modal-help">Pomerite sliku i potvrdite kvadratni crop.</p>
+                    <div class="crop-image-wrapper">
+                        <img id="crop-image" alt="Crop preview">
+                    </div>
+                    <div class="crop-modal-actions">
+                        <button type="button" class="main-btn cancel-btn" id="crop-cancel-btn">Otkaži</button>
+                        <button type="button" class="main-btn" id="crop-apply-btn">Primeni</button>
+                    </div>
                 </div>
             </div>
 

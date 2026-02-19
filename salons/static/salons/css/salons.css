@@ -745,3 +745,54 @@ body.sidebar-collapsed .sidebar-toggle-text {
     margin: 0;
     font-style: italic;
 }
+
+.crop-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 16px;
+}
+
+.crop-modal.is-open {
+    display: flex;
+}
+
+.crop-modal-content {
+    width: min(92vw, 560px);
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.crop-image-wrapper {
+    width: 100%;
+    height: min(70vh, 420px);
+    overflow: hidden;
+}
+
+.crop-image-wrapper img {
+    display: block;
+    max-width: 100%;
+}
+
+.crop-modal-help {
+    margin: 0;
+    color: var(--text);
+}
+
+.crop-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.crop-modal-actions .cancel-btn {
+    background: #4b5563;
+}

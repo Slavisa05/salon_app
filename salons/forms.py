@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
 from datetime import datetime
+from PIL import Image, UnidentifiedImageError
 from .models import Salon, Service, SalonWorkingHours
 
 
@@ -43,16 +44,33 @@ class SalonForm(forms.ModelForm):
     def clean_image(self):
         """Validacija slike"""
         image = self.cleaned_data.get('image')
+
+        if not image:
+            return image
+
+        is_uploaded_file = hasattr(image, 'content_type')
+
+        if not is_uploaded_file:
+            return image
         
-        if image:
-            # Proveri veličinu (5MB)
-            if image.size > 5 * 1024 * 1024:
-                raise forms.ValidationError('Slika je prevelika. Maksimalno 5MB.')
-            
-            # Proveri tip
-            valid_types = ['image/jpeg', 'image/png', 'image/webp']
-            if image.content_type not in valid_types:
-                raise forms.ValidationError('Nevalidan format slike. Koristite JPG, PNG ili WebP.')
+        # Proveri veličinu (5MB)
+        if image.size > 5 * 1024 * 1024:
+            raise forms.ValidationError('Slika je prevelika. Maksimalno 5MB.')
+
+        # Proveri tip
+        valid_types = ['image/jpeg', 'image/png', 'image/webp']
+        if image.content_type not in valid_types:
+            raise forms.ValidationError('Nevalidan format slike. Koristite JPG, PNG ili WebP.')
+
+        try:
+            uploaded_image = Image.open(image)
+            width, height = uploaded_image.size
+            image.seek(0)
+        except (UnidentifiedImageError, OSError, ValueError):
+            raise forms.ValidationError('Datoteka nije validna slika.')
+
+        if (width, height) != (500, 500):
+            raise forms.ValidationError('Slika mora biti tačno 500x500 piksela.')
         
         return image
     

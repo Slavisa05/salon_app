@@ -513,24 +513,122 @@ function initImageUpload() {
     const previewContainer = document.getElementById('image-preview');
     const previewImg = document.getElementById('preview-img');
     const changeImageBtn = document.getElementById('change-image-btn');
-    
-    console.log('initImageUpload called');
-    console.log('imageInput:', imageInput);
-    console.log('previewContainer:', previewContainer);
-    console.log('previewImg:', previewImg);
-    console.log('changeImageBtn:', changeImageBtn);
+    const cropModal = document.getElementById('crop-modal');
+    const cropImage = document.getElementById('crop-image');
+    const cropApplyBtn = document.getElementById('crop-apply-btn');
+    const cropCancelBtn = document.getElementById('crop-cancel-btn');
     
     if (!imageInput || !previewContainer || !previewImg) {
-        // Nema image upload-a na ovoj stranici
-        console.warn('Missing required elements for image upload');
         return;
     }
+
+    let cropperInstance = null;
+    let sourceFile = null;
+    let modalImageUrl = null;
+
+    const destroyCropper = () => {
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+    };
+
+    const closeCropModal = () => {
+        destroyCropper();
+        if (modalImageUrl) {
+            URL.revokeObjectURL(modalImageUrl);
+            modalImageUrl = null;
+        }
+        if (cropModal) {
+            cropModal.classList.remove('is-open');
+            cropModal.setAttribute('aria-hidden', 'true');
+        }
+    };
+
+    const updatePreview = (imageUrl) => {
+        previewImg.src = imageUrl;
+        previewImg.style.opacity = '0';
+        setTimeout(() => {
+            previewImg.style.transition = 'opacity 0.3s ease';
+            previewImg.style.opacity = '1';
+        }, 50);
+    };
+
+    const assignFileToInput = (file) => {
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        imageInput.files = transfer.files;
+    };
+
+    const getOutputMimeType = (fileType) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        return allowedTypes.includes(fileType) ? fileType : 'image/jpeg';
+    };
+
+    const fileToCroppedFile = (canvas, originalFile) => {
+        return new Promise((resolve, reject) => {
+            const mimeType = getOutputMimeType(originalFile.type);
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) {
+                        reject(new Error('Nije moguće obraditi sliku.'));
+                        return;
+                    }
+
+                    const baseName = originalFile.name.replace(/\.[^/.]+$/, '');
+                    const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
+                    const croppedFile = new File([blob], `${baseName}.${extension}`, { type: mimeType });
+                    resolve(croppedFile);
+                },
+                mimeType,
+                0.92
+            );
+        });
+    };
+
+    const openCropModal = (file) => {
+        if (!cropModal || !cropImage || !window.Cropper) {
+            alert('Crop nije dostupan. Pokušajte ponovo.');
+            return;
+        }
+
+        sourceFile = file;
+        closeCropModal();
+
+        modalImageUrl = URL.createObjectURL(file);
+        cropImage.src = modalImageUrl;
+
+        cropImage.onload = () => {
+            cropperInstance = new window.Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                responsive: true,
+                background: false
+            });
+            cropModal.classList.add('is-open');
+            cropModal.setAttribute('aria-hidden', 'false');
+        };
+    };
+
+    const processSelectedFile = (file) => {
+        if (!file) {
+            return;
+        }
+
+        if (!validateImageFile(file)) {
+            imageInput.value = '';
+            return;
+        }
+
+        openCropModal(file);
+    };
     
     /**
      * Klik na preview ili dugme otvara file picker
      */
     previewContainer.addEventListener('click', function(e) {
-        console.log('Preview container clicked');
         if (e.target !== changeImageBtn && !changeImageBtn?.contains(e.target)) {
             imageInput.click();
         }
@@ -540,7 +638,6 @@ function initImageUpload() {
         changeImageBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Change image button clicked');
             imageInput.click();
         });
     }
@@ -550,31 +647,7 @@ function initImageUpload() {
      */
     imageInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        
-        if (!file) {
-            return;
-        }
-        
-        // Validacija
-        if (!validateImageFile(file)) {
-            return;
-        }
-        
-        // Prikaži preview
-        const reader = new FileReader();
-        
-        reader.onload = function(event) {
-            previewImg.src = event.target.result;
-            
-            // Animacija
-            previewImg.style.opacity = '0';
-            setTimeout(() => {
-                previewImg.style.transition = 'opacity 0.3s ease';
-                previewImg.style.opacity = '1';
-            }, 50);
-        };
-        
-        reader.readAsDataURL(file);
+        processSelectedFile(file);
     });
     
     /**
@@ -598,18 +671,64 @@ function initImageUpload() {
         previewContainer.style.background = '#f0f0f0';
         
         const file = e.dataTransfer.files[0];
-        
-        if (file && validateImageFile(file)) {
-            // Dodaj fajl u input
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            imageInput.files = dataTransfer.files;
-            
-            // Trigger change event
-            const changeEvent = new Event('change', { bubbles: true });
-            imageInput.dispatchEvent(changeEvent);
-        }
+
+        processSelectedFile(file);
     });
+
+    if (cropCancelBtn) {
+        cropCancelBtn.addEventListener('click', () => {
+            imageInput.value = '';
+            sourceFile = null;
+            closeCropModal();
+        });
+    }
+
+    if (cropApplyBtn) {
+        cropApplyBtn.addEventListener('click', async () => {
+            if (!cropperInstance || !sourceFile) {
+                closeCropModal();
+                return;
+            }
+
+            const outputSize = 500;
+
+            try {
+                const canvas = cropperInstance.getCroppedCanvas({
+                    width: outputSize,
+                    height: outputSize,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high'
+                });
+
+                const croppedFile = await fileToCroppedFile(canvas, sourceFile);
+
+                if (!validateImageFile(croppedFile)) {
+                    imageInput.value = '';
+                    closeCropModal();
+                    return;
+                }
+
+                assignFileToInput(croppedFile);
+                updatePreview(URL.createObjectURL(croppedFile));
+                closeCropModal();
+            } catch (error) {
+                console.error(error);
+                alert('Greška pri crop-u slike.');
+                imageInput.value = '';
+                closeCropModal();
+            }
+        });
+    }
+
+    if (cropModal) {
+        cropModal.addEventListener('click', (event) => {
+            if (event.target === cropModal) {
+                imageInput.value = '';
+                sourceFile = null;
+                closeCropModal();
+            }
+        });
+    }
 }
 
 
