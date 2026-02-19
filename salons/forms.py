@@ -9,6 +9,90 @@ from PIL import Image, UnidentifiedImageError
 from .models import Salon, Service, SalonWorkingHours
 
 
+class SalonScheduleForm(forms.Form):
+    slot_interval_minutes = forms.ChoiceField(
+        choices=[('15', 'Na 15 minuta'), ('30', 'Na 30 minuta'), ('60', 'Na 60 minuta')],
+        label='Generisanje termina',
+        initial='30',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def __init__(self, *args, initial_hours=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        initial_hours = initial_hours or {}
+
+        for day_key, day_label in SalonWorkingHours.DAYS:
+            day_initial = initial_hours.get(day_key, {})
+
+            self.fields[f'{day_key}_is_working'] = forms.BooleanField(
+                required=False,
+                label=day_label,
+                initial=day_initial.get('is_working', False),
+                widget=forms.CheckboxInput(attrs={'class': 'working-day-checkbox'})
+            )
+            self.fields[f'{day_key}_opening_time'] = forms.TimeField(
+                required=False,
+                initial=day_initial.get('opening_time'),
+                input_formats=['%H:%M', '%H:%M:%S'],
+                widget=forms.TimeInput(
+                    format='%H:%M',
+                    attrs={'type': 'time', 'class': 'form-control working-time-input'}
+                )
+            )
+            self.fields[f'{day_key}_closing_time'] = forms.TimeField(
+                required=False,
+                initial=day_initial.get('closing_time'),
+                input_formats=['%H:%M', '%H:%M:%S'],
+                widget=forms.TimeInput(
+                    format='%H:%M',
+                    attrs={'type': 'time', 'class': 'form-control working-time-input'}
+                )
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for day_key, day_label in SalonWorkingHours.DAYS:
+            is_working = cleaned_data.get(f'{day_key}_is_working')
+            opening_time = cleaned_data.get(f'{day_key}_opening_time')
+            closing_time = cleaned_data.get(f'{day_key}_closing_time')
+
+            if is_working:
+                if not opening_time:
+                    self.add_error(f'{day_key}_opening_time', f'Unesite vreme otvaranja za {day_label.lower()}.')
+                if not closing_time:
+                    self.add_error(f'{day_key}_closing_time', f'Unesite vreme zatvaranja za {day_label.lower()}.')
+                if opening_time and closing_time and opening_time >= closing_time:
+                    self.add_error(f'{day_key}_closing_time', f'Vreme zatvaranja mora biti nakon otvaranja za {day_label.lower()}.')
+
+        return cleaned_data
+
+    def get_hours_payload(self):
+        payload = []
+
+        for day_key, _ in SalonWorkingHours.DAYS:
+            payload.append({
+                'day': day_key,
+                'is_working': self.cleaned_data.get(f'{day_key}_is_working', False),
+                'opening_time': self.cleaned_data.get(f'{day_key}_opening_time'),
+                'closing_time': self.cleaned_data.get(f'{day_key}_closing_time'),
+            })
+
+        return payload
+
+    def get_day_rows(self):
+        rows = []
+        for day_key, day_label in SalonWorkingHours.DAYS:
+            rows.append({
+                'key': day_key,
+                'label': day_label,
+                'is_working': self[f'{day_key}_is_working'],
+                'opening_time': self[f'{day_key}_opening_time'],
+                'closing_time': self[f'{day_key}_closing_time'],
+            })
+        return rows
+
+
 class SalonForm(forms.ModelForm):    
     class Meta:
         model = Salon

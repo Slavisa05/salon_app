@@ -505,6 +505,34 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+function initWorkingHoursToggle() {
+    const checkboxes = document.querySelectorAll('.working-day-checkbox');
+
+    if (!checkboxes.length) {
+        return;
+    }
+
+    const toggleDayInputs = (checkbox) => {
+        const row = checkbox.closest('.working-day-row');
+        if (!row) {
+            return;
+        }
+
+        const timeInputs = row.querySelectorAll('.working-time-input');
+        const isEnabled = checkbox.checked;
+
+        timeInputs.forEach((input) => {
+            input.disabled = !isEnabled;
+        });
+    };
+
+    checkboxes.forEach((checkbox) => {
+        toggleDayInputs(checkbox);
+        checkbox.addEventListener('change', () => toggleDayInputs(checkbox));
+    });
+}
+
+
 /**
  * Inicijalizuje image upload funkcionalnost
  */

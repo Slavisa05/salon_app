@@ -45,6 +45,51 @@
                 {% endif %}
             </div>
 
+            <div class="salon-form-group salon-form-schedule">
+                <h3>Radno vreme i termini</h3>
+
+                {% if schedule_form.non_field_errors %}
+                    {{ schedule_form.non_field_errors }}
+                {% endif %}
+
+                <div class="schedule-interval-row">
+                    <label for="{{ schedule_form.slot_interval_minutes.id_for_label }}">{{ schedule_form.slot_interval_minutes.label }}</label>
+                    {{ schedule_form.slot_interval_minutes }}
+                    {% if schedule_form.slot_interval_minutes.errors %}
+                        {{ schedule_form.slot_interval_minutes.errors }}
+                    {% endif %}
+                </div>
+
+                <div class="working-days-list">
+                    {% for row in schedule_rows %}
+                        <div class="working-day-row">
+                            <label class="working-day-check">
+                                {{ row.is_working }}
+                                <span>{{ row.label }}</span>
+                            </label>
+
+                            <div class="working-day-times">
+                                <div class="time-field-wrap">
+                                    <label for="{{ row.opening_time.id_for_label }}">Od</label>
+                                    {{ row.opening_time }}
+                                    {% if row.opening_time.errors %}
+                                        {{ row.opening_time.errors }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="time-field-wrap">
+                                    <label for="{{ row.closing_time.id_for_label }}">Do</label>
+                                    {{ row.closing_time }}
+                                    {% if row.closing_time.errors %}
+                                        {{ row.closing_time.errors }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
             <div class="salon-form-group salon-form-image">
                 <label>{{ form.image.label }}</label>
                 

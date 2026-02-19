@@ -7,9 +7,38 @@ from datetime import date, timedelta, datetime
 from django.contrib import messages
 from sistem_zakazivanja.decorators import require_barber_with_approved_salon
 from sistem_zakazivanja.models import UserProfile
-from .models import Salon, TimeSlot, Appointment, Service
-from .utils import generate_time_slots_for_date, create_default_working_hours, generate_slots_for_next_months, regenerate_future_slots_after_hours_change
-from .forms import SalonForm, ServiceForm
+from .models import Salon, TimeSlot, Appointment, Service, SalonWorkingHours
+from .utils import (
+    generate_time_slots_for_date,
+    create_default_working_hours,
+    generate_slots_for_next_months,
+    regenerate_future_slots_after_hours_change,
+    regenerate_future_slots_all_days,
+    get_default_working_hours_map,
+    upsert_working_hours,
+)
+from .forms import SalonForm, ServiceForm, SalonScheduleForm
+
+
+def _build_initial_working_hours(salon=None):
+    initial_hours = get_default_working_hours_map()
+
+    if not salon:
+        return initial_hours
+
+    existing_hours = SalonWorkingHours.objects.filter(salon=salon)
+    for working_hour in existing_hours:
+        initial_hours[working_hour.day] = {
+            'is_working': working_hour.is_working,
+            'opening_time': working_hour.opening_time,
+            'closing_time': working_hour.closing_time,
+        }
+
+    return initial_hours
+
+
+def _build_schedule_rows(schedule_form):
+    return schedule_form.get_day_rows()
 
 
 @require_barber_with_approved_salon
@@ -273,15 +302,23 @@ def create_salon(request):
     except Salon.DoesNotExist:
         pass
 
+    initial_hours = _build_initial_working_hours()
+
     if request.method == 'POST':
         form = SalonForm(request.POST, request.FILES)
-        if form.is_valid():
+        schedule_form = SalonScheduleForm(request.POST, initial_hours=initial_hours)
+
+        if form.is_valid() and schedule_form.is_valid():
             try:
                 salon = form.save(commit=False)
                 salon.owner = request.user
                 salon.is_approved = False
                 salon.is_active = False
+                salon.slot_interval_minutes = int(schedule_form.cleaned_data['slot_interval_minutes'])
                 salon.save()
+
+                upsert_working_hours(salon, schedule_form.get_hours_payload())
+                generate_slots_for_next_months(salon)
 
 
                 messages.success(
@@ -293,10 +330,20 @@ def create_salon(request):
                 return redirect('pending_approval')
             except Exception as e:
                 messages.error(request, f'Greška pri kreiranju salona: {str(e)}')
+        else:
+            messages.error(request, 'Molimo vas ispravite greške ispod.')
     else:
         form = SalonForm()
+        schedule_form = SalonScheduleForm(
+            initial={'slot_interval_minutes': '30'},
+            initial_hours=initial_hours
+        )
 
-    return render(request, 'salons/salon_form.html', {'form': form})
+    return render(request, 'salons/salon_form.html', {
+        'form': form,
+        'schedule_form': schedule_form,
+        'schedule_rows': _build_schedule_rows(schedule_form),
+    })
 
 
 @require_barber_with_approved_salon
@@ -307,11 +354,35 @@ def edit_salon(request, salon_name):
         if salon.owner != request.user:
             return HttpResponseForbidden("Nemate dozvolu da menjate ovaj salon")
 
+    initial_hours = _build_initial_working_hours(salon)
+
     if request.method == 'POST':
         form = SalonForm(request.POST, request.FILES, instance=salon)
-        if form.is_valid():
+        schedule_form = SalonScheduleForm(request.POST, initial_hours=initial_hours)
+
+        if form.is_valid() and schedule_form.is_valid():
             try:
-                form.save()
+                previous_interval = salon.slot_interval_minutes
+                previous_hours = {
+                    item.day: (item.is_working, item.opening_time, item.closing_time)
+                    for item in salon.working_hours.all()
+                }
+
+                salon = form.save(commit=False)
+                salon.slot_interval_minutes = int(schedule_form.cleaned_data['slot_interval_minutes'])
+                salon.save()
+
+                upsert_working_hours(salon, schedule_form.get_hours_payload())
+
+                interval_changed = previous_interval != salon.slot_interval_minutes
+                if interval_changed:
+                    regenerate_future_slots_all_days(salon)
+                else:
+                    for item in salon.working_hours.all():
+                        previous = previous_hours.get(item.day)
+                        current = (item.is_working, item.opening_time, item.closing_time)
+                        if previous != current:
+                            regenerate_future_slots_after_hours_change(salon, item.day)
                 
                 messages.success(
                     request,
@@ -324,8 +395,18 @@ def edit_salon(request, salon_name):
             messages.error(request, 'Molimo vas ispravite greške ispod.')
     else:
         form = SalonForm(instance=salon)
+        schedule_form = SalonScheduleForm(
+            initial={'slot_interval_minutes': str(salon.slot_interval_minutes)},
+            initial_hours=initial_hours
+        )
 
-    return render(request, 'salons/salon_form.html', {'form': form, 'salon': salon, 'is_edit': True})
+    return render(request, 'salons/salon_form.html', {
+        'form': form,
+        'schedule_form': schedule_form,
+        'schedule_rows': _build_schedule_rows(schedule_form),
+        'salon': salon,
+        'is_edit': True,
+    })
 
 
 # SERVICE FORMS

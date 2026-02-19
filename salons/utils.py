@@ -2,29 +2,71 @@ from datetime import date, datetime, timedelta, time
 from .models import SalonWorkingHours, TimeSlot
 
 
+DAY_MAPPING = {
+    'monday': 'ponedeljak',
+    'tuesday': 'utorak',
+    'wednesday': 'sreda',
+    'thursday': 'cetvrtak',
+    'friday': 'petak',
+    'saturday': 'subota',
+    'sunday': 'nedelja'
+}
+
+DEFAULT_WORKING_HOURS = {
+    'ponedeljak': {'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
+    'utorak': {'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
+    'sreda': {'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
+    'cetvrtak': {'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
+    'petak': {'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
+    'subota': {'is_working': False, 'opening': time(9, 0), 'closing': time(17, 0)},
+    'nedelja': {'is_working': False, 'opening': time(9, 0), 'closing': time(17, 0)},
+}
+
+
+def get_default_working_hours_map():
+    return {
+        day: {
+            'is_working': data['is_working'],
+            'opening_time': data['opening'],
+            'closing_time': data['closing'],
+        }
+        for day, data in DEFAULT_WORKING_HOURS.items()
+    }
+
+
+def upsert_working_hours(salon, hours_payload):
+    for item in hours_payload:
+        day = item['day']
+        is_working = item['is_working']
+        opening = item['opening_time'] if item['opening_time'] else DEFAULT_WORKING_HOURS[day]['opening']
+        closing = item['closing_time'] if item['closing_time'] else DEFAULT_WORKING_HOURS[day]['closing']
+
+        SalonWorkingHours.objects.update_or_create(
+            salon=salon,
+            day=day,
+            defaults={
+                'is_working': is_working,
+                'opening_time': opening,
+                'closing_time': closing,
+            }
+        )
+
+
 def create_default_working_hours(salon):
     """
     Kreira default radno vreme za salon:
     Pon-Pet: 09:00-17:00 (radi)
     Sub-Ned: Ne radi
     """
-    days_config = [
-        {'day': 'ponedeljak', 'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
-        {'day': 'utorak', 'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
-        {'day': 'sreda', 'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
-        {'day': 'cetvrtak', 'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
-        {'day': 'petak', 'is_working': True, 'opening': time(9, 0), 'closing': time(17, 0)},
-        {'day': 'subota', 'is_working': False, 'opening': time(9, 0), 'closing': time(17, 0)},
-        {'day': 'nedelja', 'is_working': False, 'opening': time(9, 0), 'closing': time(17, 0)},
-    ]
-    
-    for config in days_config:
-        SalonWorkingHours.objects.create(
+    for day, config in DEFAULT_WORKING_HOURS.items():
+        SalonWorkingHours.objects.update_or_create(
             salon=salon,
-            day=config['day'],
-            is_working=config['is_working'],
-            opening_time=config['opening'],
-            closing_time=config['closing']
+            day=day,
+            defaults={
+                'is_working': config['is_working'],
+                'opening_time': config['opening'],
+                'closing_time': config['closing'],
+            }
         )
 
 
@@ -48,17 +90,7 @@ def generate_time_slots_for_date(salon, target_date):
     """
     # 1. Odredi dan u nedelji
     day_name = target_date.strftime('%A').lower()
-    day_mapping = {
-        'monday': 'ponedeljak',
-        'tuesday': 'utorak',
-        'wednesday': 'sreda',
-        'thursday': 'cetvrtak',
-        'friday': 'petak',
-        'saturday': 'subota',
-        'sunday': 'nedelja'
-    }
-    
-    serbian_day = day_mapping.get(day_name)
+    serbian_day = DAY_MAPPING.get(day_name)
     
     # 2. Proveri da li salon radi tog dana
     try:
@@ -71,11 +103,12 @@ def generate_time_slots_for_date(salon, target_date):
         # Ne radi tog dana - ne generiši slotove
         return []
     
-    # 3. Generiši sve slotove od opening do closing (svakih 30min)
+    # 3. Generiši sve slotove od opening do closing (svakih 15 ili 30 min)
     slots = []
     current_time = datetime.combine(target_date, working_hours.opening_time)
     end_time = datetime.combine(target_date, working_hours.closing_time)
-    slot_duration = timedelta(minutes=30)
+    slot_minutes = getattr(salon, 'slot_interval_minutes', 30) or 30
+    slot_duration = timedelta(minutes=slot_minutes)
     
     while current_time + slot_duration <= end_time:
         slot_end = current_time + slot_duration
@@ -127,17 +160,7 @@ def regenerate_future_slots_after_hours_change(salon, changed_day):
     while current_date <= end_date:
         # Proveri da li je ovaj dan u nedelji jednak promenjenom danu
         day_name = current_date.strftime('%A').lower()
-        day_mapping = {
-            'monday': 'ponedeljak',
-            'tuesday': 'utorak',
-            'wednesday': 'sreda',
-            'thursday': 'cetvrtak',
-            'friday': 'petak',
-            'saturday': 'subota',
-            'sunday': 'nedelja'
-        }
-        
-        if day_mapping[day_name] == changed_day:
+        if DAY_MAPPING[day_name] == changed_day:
             # Obriši samo DOSTUPNE slotove za taj dan
             TimeSlot.objects.filter(
                 salon=salon,
@@ -148,4 +171,19 @@ def regenerate_future_slots_after_hours_change(salon, changed_day):
             # Regeneriši slotove
             generate_time_slots_for_date(salon, current_date)
         
+        current_date += timedelta(days=1)
+
+
+def regenerate_future_slots_all_days(salon):
+    today = date.today()
+    end_date = today + timedelta(days=60)
+
+    current_date = today
+    while current_date <= end_date:
+        TimeSlot.objects.filter(
+            salon=salon,
+            date=current_date,
+            status='dostupan'
+        ).delete()
+        generate_time_slots_for_date(salon, current_date)
         current_date += timedelta(days=1)

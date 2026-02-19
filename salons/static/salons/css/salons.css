@@ -9,7 +9,7 @@ body {
 }
 
 section {
-    padding-top: 5vh;
+    padding: 5vh;
 }
 
 /* SIDEBAR */
@@ -618,6 +618,78 @@ body.sidebar-collapsed .sidebar-toggle-text {
 .salon-form-actions {
     grid-column: 1 / -1;
     justify-self: start;
+}
+
+.salon-form-schedule {
+    width: 100%;
+    grid-column: 1;
+    padding: 14px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.04);
+}
+
+.salon-form-schedule h3 {
+    margin: 0;
+}
+
+.schedule-interval-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.schedule-interval-row select.form-control {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    box-shadow: none;
+}
+
+.schedule-interval-row select.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.schedule-interval-row select.form-control option {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.working-days-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.working-day-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 180px) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 10px;
+    background: var(--bg);
+}
+
+.working-day-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.working-day-times {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.time-field-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 /* SERVICE FORM */

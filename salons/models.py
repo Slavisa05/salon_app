@@ -14,6 +14,10 @@ class Salon(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_approved = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    slot_interval_minutes = models.PositiveSmallIntegerField(
+        choices=[(15, '15 minuta'), (30, '30 minuta'), (60, '60 minuta')],
+        default=30
+    )
     # ovde mozda dodati i komentare i ocene
 
     class Meta:
