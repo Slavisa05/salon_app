@@ -84,3 +84,42 @@
     background: var(--bg);
     color: var(--text);
 }
+
+/* MY APPOINTMENTS PAGE */
+.my-appointments-section {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 15vh 5vw 5vh 5vw;
+    min-height: 100vh;
+}
+
+.appointments-grid {
+    padding-top: 5vh;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.appointments-group {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.appointments-list {
+    padding-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 35px;
+}
+
+.appointment-card {
+    padding: 20px 50px;
+    border-radius: 10px;
+    background-image: var(--gradient180);
+    color: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}

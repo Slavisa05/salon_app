@@ -3,7 +3,10 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 from datetime import date, timedelta, datetime
+import json
 from django.contrib import messages
 from sistem_zakazivanja.decorators import require_barber_with_approved_salon
 from sistem_zakazivanja.models import UserProfile
@@ -13,7 +16,7 @@ from .utils import (
     create_default_working_hours,
     generate_slots_for_next_months,
     regenerate_future_slots_after_hours_change,
-    regenerate_future_slots_all_days,
+    regenerate_future_slots_without_booked_days,
     get_default_working_hours_map,
     upsert_working_hours,
 )
@@ -229,6 +232,7 @@ def appointment_details(request, salon_name, slot_id):
         'service': service_name,
         'status': appointment.status,
         'notes': appointment.notes,
+        'cancellation_reason': appointment.cancellation_reason,
         'date': slot.date.strftime('%Y-%m-%d'),
         'time': f"{slot.begin_time.strftime('%H:%M')} - {slot.end_time.strftime('%H:%M')}"
     })
@@ -243,6 +247,14 @@ def cancel_appointment(request, salon_name, slot_id):
     if not (request.user.is_superuser or request.user.is_staff):
         if salon.owner != request.user:
             return HttpResponseForbidden("Nemate dozvolu da otkazujete termine za ovaj salon")
+
+    cancellation_reason = ''
+    if request.body:
+        try:
+            payload = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Neispravan JSON payload'}, status=400)
+        cancellation_reason = payload.get('cancellation_reason', '').strip()
 
     appointment = None
     if hasattr(slot, 'appointment'):
@@ -277,8 +289,54 @@ def cancel_appointment(request, salon_name, slot_id):
         return JsonResponse({'status': 'ok'})
 
     appointment.status = 'otkazano'
-    appointment.save(update_fields=['status'])
-    return JsonResponse({'status': 'ok'})
+    appointment.cancellation_reason = cancellation_reason
+    appointment.save(update_fields=['status', 'cancellation_reason'])
+
+    customer_email = appointment.customer.email
+    email_sent = False
+    if customer_email:
+        try:
+            subject_prefix = getattr(settings, 'EMAIL_SUBJECT_PREFIX', '')
+            subject = f"{subject_prefix}Termin je otkazan - {salon.name}"
+            reason_text = cancellation_reason if cancellation_reason else '-'
+            service_name = appointment.service.name if appointment.service else '-'
+            slot_label = f"{slot.begin_time.strftime('%H:%M')} - {slot.end_time.strftime('%H:%M')}"
+
+            message_text = (
+                "Vaš termin je otkazan od strane frizera.\n\n"
+                f"Salon: {salon.name}\n"
+                f"Usluga: {service_name}\n"
+                f"Datum: {slot.date.strftime('%d.%m.%Y')}\n"
+                f"Vreme: {slot_label}\n"
+                f"Razlog otkazivanja: {reason_text}\n"
+            )
+
+            message_html = f"""
+            <html>
+              <body style=\"font-family: Arial, sans-serif; color: #1F2937;\">
+                <h2>Vaš termin je otkazan</h2>
+                <p><strong>Salon:</strong> {salon.name}</p>
+                <p><strong>Usluga:</strong> {service_name}</p>
+                <p><strong>Datum:</strong> {slot.date.strftime('%d.%m.%Y')}</p>
+                <p><strong>Vreme:</strong> {slot_label}</p>
+                <p><strong>Razlog otkazivanja:</strong> {reason_text}</p>
+              </body>
+            </html>
+            """
+
+            email_message = EmailMultiAlternatives(
+                subject,
+                message_text,
+                settings.DEFAULT_FROM_EMAIL,
+                [customer_email]
+            )
+            email_message.attach_alternative(message_html, 'text/html')
+            email_message.send(fail_silently=False)
+            email_sent = True
+        except Exception:
+            email_sent = False
+
+    return JsonResponse({'status': 'ok', 'email_sent': email_sent})
 
 
 # SALON FORMS
@@ -375,19 +433,35 @@ def edit_salon(request, salon_name):
                 upsert_working_hours(salon, schedule_form.get_hours_payload())
 
                 interval_changed = previous_interval != salon.slot_interval_minutes
+                interval_update_summary = None
                 if interval_changed:
-                    regenerate_future_slots_all_days(salon)
+                    interval_update_summary = regenerate_future_slots_without_booked_days(salon)
                 else:
                     for item in salon.working_hours.all():
                         previous = previous_hours.get(item.day)
                         current = (item.is_working, item.opening_time, item.closing_time)
                         if previous != current:
                             regenerate_future_slots_after_hours_change(salon, item.day)
-                
-                messages.success(
-                    request,
-                    'Salon je ažuriran! '
-                )
+
+                if interval_changed and interval_update_summary:
+                    regenerated_days = interval_update_summary['regenerated_days']
+                    skipped_days = interval_update_summary['skipped_days']
+                    if skipped_days > 0:
+                        messages.success(
+                            request,
+                            'Salon je ažuriran! Novi interval je primenjen samo na dane bez zakazanih termina '
+                            f'({regenerated_days} dana ažurirano, {skipped_days} dana preskočeno).'
+                        )
+                    else:
+                        messages.success(
+                            request,
+                            f'Salon je ažuriran! Novi interval je primenjen na svih {regenerated_days} dana.'
+                        )
+                else:
+                    messages.success(
+                        request,
+                        'Salon je ažuriran! '
+                    )
                 return redirect('salons:edit_salon', salon_name=salon.name)
             except Exception as e:
                 messages.error(request, f'Greška pri ažuriranju salona: {str(e)}')

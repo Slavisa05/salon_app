@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta, time
-from .models import SalonWorkingHours, TimeSlot
+from .models import SalonWorkingHours, TimeSlot, Appointment
 
 
 DAY_MAPPING = {
@@ -187,3 +187,36 @@ def regenerate_future_slots_all_days(salon):
         ).delete()
         generate_time_slots_for_date(salon, current_date)
         current_date += timedelta(days=1)
+
+
+def regenerate_future_slots_without_booked_days(salon):
+    today = date.today()
+    end_date = today + timedelta(days=60)
+
+    current_date = today
+    regenerated_days = 0
+    skipped_days = 0
+
+    while current_date <= end_date:
+        has_active_appointments = Appointment.objects.filter(
+            time_slot__salon=salon,
+            time_slot__date=current_date,
+        ).exclude(status='otkazano').exists()
+
+        if has_active_appointments:
+            skipped_days += 1
+        else:
+            TimeSlot.objects.filter(
+                salon=salon,
+                date=current_date,
+                status='dostupan'
+            ).delete()
+            generate_time_slots_for_date(salon, current_date)
+            regenerated_days += 1
+
+        current_date += timedelta(days=1)
+
+    return {
+        'regenerated_days': regenerated_days,
+        'skipped_days': skipped_days,
+    }

@@ -138,3 +138,8 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@tvoj-salon.com')
+APP_BASE_URL = os.getenv('APP_BASE_URL', 'http://127.0.0.1:8000')
+SALON_APPROVAL_NOTIFY_EMAIL = os.getenv('SALON_APPROVAL_NOTIFY_EMAIL', '')
+
+# Auth redirects
+LOGIN_URL = '/login/'

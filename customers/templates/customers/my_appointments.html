@@ -1,0 +1,89 @@
+{% extends "customers/customers_base.html" %}
+
+{% block title %}
+    Moji termini
+{% endblock title %}
+
+{% block description %}
+    Pregled svojih zakazanih i završenih termina
+{% endblock description %}
+
+{% block content %}
+    <main>
+        <section class="my-appointments-section">
+            <h1>Moji Termini</h1>
+
+            <div class="appointments-grid">
+            
+                {% if future_appointments %}
+                    <div class="appointments-group">
+                        <h2>Budući Termini</h2>
+                        <div class="appointments-list">
+                            {% for appointment in future_appointments %}
+                                <div class="appointment-card appointment-future">
+                                    <div class="appointment-header">
+                                        <h3>{{ appointment.salon.name }}</h3>
+                                    </div>
+                                    
+                                    <div class="appointment-details">
+                                        <div class="detail-row">
+                                            <span class="detail-label">📅</span>
+                                            <span class="detail-value">{{ appointment.time_slot.date|date:"d.m.Y" }} - {{ appointment.time_slot.begin_time|time:"H:i" }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">💇</span>
+                                            <span class="detail-value">{{ appointment.service.name }}</span>
+                                        </div>
+                                        {% if appointment.notes %}
+                                            <div class="detail-row">
+                                                <span class="detail-label">📝</span>
+                                                <span class="detail-value">{{ appointment.notes }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>Trenutno nemaš zakazanih termina.</p>
+                        <a href="{% url 'customers:home' %}" class="link-btn">Pronađi salon i zakaži termin</a>
+                    </div>
+                {% endif %}
+
+                {% if past_appointments %}
+                    <div class="appointments-group">
+                        <h2 class="appointments-group-title">Završeni Termini</h2>
+                        <div class="appointments-list">
+                            {% for appointment in past_appointments %}
+                                <div class="appointment-card appointment-past">
+                                    <div class="appointment-header">
+                                        <h3>{{ appointment.salon.name }}</h3>
+                                    </div>
+                                    
+                                    <div class="appointment-details">
+                                        <div class="detail-row">
+                                            <span class="detail-label">📅</span>
+                                            <span class="detail-value">{{ appointment.time_slot.date|date:"d.m.Y" }} - {{ appointment.time_slot.begin_time|time:"H:i" }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">💇</span>
+                                            <span class="detail-value">{{ appointment.service.name }}</span>
+                                        </div>
+                                        {% if appointment.notes %}
+                                            <div class="detail-row">
+                                                <span class="detail-label">📝</span>
+                                                <span class="detail-value">{{ appointment.notes }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+{% endblock content %}

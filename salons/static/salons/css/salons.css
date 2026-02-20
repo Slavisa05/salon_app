@@ -530,6 +530,11 @@ body.sidebar-collapsed .sidebar-toggle-text {
     gap: 8px;
 }
 
+.modal-row.modal-row-stack {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+}
+
 .modal-label {
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -540,6 +545,28 @@ body.sidebar-collapsed .sidebar-toggle-text {
 .modal-value {
     font-weight: 600;
     color: #0f172a;
+}
+
+.modal-textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 86px;
+}
+
+.modal-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.modal-textarea:disabled {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
 }
 
 .modal-footer {

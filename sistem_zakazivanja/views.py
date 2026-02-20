@@ -132,8 +132,6 @@ def login_page(request):
                 try:
                     _send_verification_email(request, user, target_email, purpose=verify_purpose)
                     messages.info(request, 'Email nije potvrđen. Poslali smo verifikacioni link.')
-                    if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
-                        messages.info(request, 'Pošto koristite console backend, proverite terminal za verifikacioni link.')
                 except Exception:
                     messages.error(request, 'Email nije potvrđen, a slanje verifikacionog linka trenutno nije uspelo.')
                 return render(request, 'login_page.html', {'form': form})
@@ -205,8 +203,6 @@ def register_page(request):
                 _send_verification_email(request, user, user.email, purpose='register')
                 messages.success(request, 'Nalog je uspešno kreiran.')
                 messages.info(request, 'Poslali smo verifikacioni link na email. Potvrdite adresu pa se ulogujte.')
-                if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
-                    messages.info(request, 'Pošto koristite console backend, proverite terminal za verifikacioni link.')
                 return redirect('login')
             except Exception as e:
                 messages.error(request, f'Greška pri kreiranju naloga: {str(e)}')
@@ -292,8 +288,6 @@ def userEditForm(request):
 
                 logout(request)
                 messages.info(request, 'Poslali smo verifikacioni link na novu email adresu. Potvrdite email pa se ponovo ulogujte.')
-                if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
-                    messages.info(request, 'Pošto koristite console backend, proverite terminal za verifikacioni link.')
                 return redirect('login')
 
             messages.success(request, 'Podaci profila su uspešno ažurirani.')

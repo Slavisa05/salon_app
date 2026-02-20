@@ -1,8 +1,14 @@
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 from datetime import datetime, timedelta
 import math
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Salon(models.Model):
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -22,6 +28,114 @@ class Salon(models.Model):
 
     class Meta:
         verbose_name_plural = "Saloni"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        was_approved = False
+        if self.pk:
+            previous = Salon.objects.filter(pk=self.pk).only('is_approved').first()
+            was_approved = previous.is_approved if previous else False
+
+        super().save(*args, **kwargs)
+
+        if is_new and not self.is_approved:
+            self._send_pending_approval_email_to_admin()
+
+        if not was_approved and self.is_approved:
+            self._send_approval_email()
+
+    def _get_admin_notification_recipients(self):
+        recipients = getattr(settings, 'SALON_APPROVAL_NOTIFY_EMAILS', []) or []
+
+        if isinstance(recipients, str):
+            recipients = [item.strip() for item in recipients.split(',') if item.strip()]
+
+        if recipients:
+            return recipients
+
+        fallback = getattr(settings, 'SALON_APPROVAL_NOTIFY_EMAIL', '')
+        return [fallback] if fallback else []
+
+    def _send_pending_approval_email_to_admin(self):
+        recipients = self._get_admin_notification_recipients()
+        if not recipients:
+            return
+
+        try:
+            subject_prefix = getattr(settings, 'EMAIL_SUBJECT_PREFIX', '')
+            subject = f"{subject_prefix}Novi salon čeka odobrenje"
+            owner_email = self.owner.email if self.owner.email else '-'
+
+            message_text = (
+                "Kreiran je novi salon koji čeka odobrenje.\n\n"
+                f"Salon: {self.name}\n"
+                f"Vlasnik: {self.owner.username}\n"
+                f"Email vlasnika: {owner_email}\n"
+            )
+            message_html = f"""
+            <html>
+              <body style=\"font-family: Arial, sans-serif; color: #1F2937;\">
+                <h2>Novi salon čeka odobrenje</h2>
+                <p><strong>Salon:</strong> {self.name}</p>
+                <p><strong>Vlasnik:</strong> {self.owner.username}</p>
+                <p><strong>Email vlasnika:</strong> {owner_email}</p>
+              </body>
+            </html>
+            """
+
+            email_message = EmailMultiAlternatives(
+                subject,
+                message_text,
+                settings.DEFAULT_FROM_EMAIL,
+                recipients,
+            )
+            email_message.attach_alternative(message_html, 'text/html')
+            email_message.send(fail_silently=False)
+        except Exception:
+            logger.exception('Neuspešno slanje emaila adminu za salon koji čeka odobrenje (salon_id=%s).', self.pk)
+
+    def _send_approval_email(self):
+        owner_email = self.owner.email
+        if not owner_email:
+            return
+
+        try:
+            subject_prefix = getattr(settings, 'EMAIL_SUBJECT_PREFIX', '')
+            subject = f"{subject_prefix}Vaš salon je odobren"
+            login_path = getattr(settings, 'LOGIN_URL', '/login/')
+            app_base_url = getattr(settings, 'APP_BASE_URL', 'http://127.0.0.1:8000').rstrip('/')
+            login_url = f"{app_base_url}{login_path}"
+
+            message_text = (
+                f"Zdravo, {self.owner.username}!\n\n"
+                f"Vaš salon \"{self.name}\" je odobren.\n"
+                "Sada možete da se ulogujete i upravljate salonom.\n"
+                f"Prijava: {login_url}\n"
+            )
+            message_html = f"""
+            <html>
+              <body style=\"font-family: Arial, sans-serif; color: #1F2937;\">
+                <h2>Vaš salon je odobren</h2>
+                <p>Zdravo, <strong>{self.owner.username}</strong>!</p>
+                <p>Vaš salon <strong>{self.name}</strong> je odobren.</p>
+                <p>Sada možete da se ulogujete i upravljate salonom.</p>
+                <p style=\"margin: 20px 0;\">
+                  <a href=\"{login_url}\" style=\"background:#6366F1;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;display:inline-block;\">Ulogujte se</a>
+                </p>
+              </body>
+            </html>
+            """
+
+            email_message = EmailMultiAlternatives(
+                subject,
+                message_text,
+                settings.DEFAULT_FROM_EMAIL,
+                [owner_email],
+            )
+            email_message.attach_alternative(message_html, 'text/html')
+            email_message.send(fail_silently=False)
+        except Exception:
+            logger.exception('Neuspešno slanje emaila vlasniku za odobren salon (salon_id=%s).', self.pk)
     
     def __str__(self):
         return self.name
@@ -119,6 +233,7 @@ class Appointment(models.Model):
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, related_name='appointments')
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='na čekanju')
     notes = models.TextField(blank=True)
+    cancellation_reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

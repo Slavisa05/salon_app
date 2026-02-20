@@ -67,6 +67,19 @@
                         <span class="modal-label">Napomena</span>
                         <span id="appointment-notes" class="modal-value">-</span>
                     </div>
+                    <div class="modal-row">
+                        <span class="modal-label">Razlog otkazivanja</span>
+                        <span id="appointment-cancel-reason-display" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-row modal-row-stack">
+                        <label for="appointment-cancel-reason" class="modal-label">Unesi razlog</label>
+                        <textarea
+                            id="appointment-cancel-reason"
+                            class="modal-textarea"
+                            rows="3"
+                            placeholder="Npr. Frizer je odsutan zbog hitnog slučaja"
+                        ></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" id="appointment-cancel" class="modal-action danger">Otkaži termin</button>

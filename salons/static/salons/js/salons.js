@@ -233,6 +233,8 @@ class SalonScheduler {
         const date = document.getElementById('appointment-date');
         const time = document.getElementById('appointment-time');
         const notes = document.getElementById('appointment-notes');
+        const cancellationReasonDisplay = document.getElementById('appointment-cancel-reason-display');
+        const cancellationReasonInput = document.getElementById('appointment-cancel-reason');
         const cancelButton = document.getElementById('appointment-cancel');
 
         if (customer) {
@@ -252,6 +254,13 @@ class SalonScheduler {
         }
         if (notes) {
             notes.textContent = data.notes ? data.notes : '-';
+        }
+        if (cancellationReasonDisplay) {
+            cancellationReasonDisplay.textContent = data.cancellation_reason ? data.cancellation_reason : '-';
+        }
+        if (cancellationReasonInput) {
+            cancellationReasonInput.value = data.status === 'otkazano' ? (data.cancellation_reason || '') : '';
+            cancellationReasonInput.disabled = data.status === 'otkazano';
         }
 
         if (cancelButton) {
@@ -280,8 +289,11 @@ class SalonScheduler {
                     return;
                 }
 
+                const cancellationReasonInput = document.getElementById('appointment-cancel-reason');
+                const cancellationReason = cancellationReasonInput ? cancellationReasonInput.value.trim() : '';
+
                 if (confirm('Da li ste sigurni da želite da otkažete termin?')) {
-                    this.cancelAppointment(slotId);
+                    this.cancelAppointment(slotId, cancellationReason);
                 }
             });
         }
@@ -293,14 +305,17 @@ class SalonScheduler {
         });
     }
 
-    async cancelAppointment(slotId) {
+    async cancelAppointment(slotId, cancellationReason = '') {
         try {
             const response = await fetch(`/salons/${this.salonName}/slots/${slotId}/appointment/cancel/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': this.getCsrfToken()
-                }
+                },
+                body: JSON.stringify({
+                    cancellation_reason: cancellationReason
+                })
             });
 
             if (!response.ok) {

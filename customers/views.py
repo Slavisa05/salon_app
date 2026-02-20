@@ -143,3 +143,38 @@ def available_slots(request, salon_name):
     ]
 
     return JsonResponse({'slots': slots_data})
+
+
+@login_required
+def my_appointments(request):
+    """Prikaži sve termine korisnika (prethodne i buduće)"""
+    if not _is_customer(request.user):
+        messages.error(request, 'Samo mušterije mogu pristupiti svojim terminima.')
+        return redirect('redirect_after_login')
+
+    today = date.today()
+    
+    # Učitaj sve termine korisnika sortirane po datumu
+    appointments = Appointment.objects.filter(
+        customer=request.user
+    ).select_related('time_slot', 'service', 'salon').order_by(
+        '-time_slot__date', '-time_slot__begin_time'
+    )
+    
+    # Razdvoji na buduće i prethodne
+    future_appointments = []
+    past_appointments = []
+    
+    for appointment in appointments:
+        if appointment.time_slot.date >= today:
+            future_appointments.append(appointment)
+        else:
+            past_appointments.append(appointment)
+    
+    context = {
+        'future_appointments': future_appointments,
+        'past_appointments': past_appointments,
+        'today': today,
+    }
+    
+    return render(request, 'customers/my_appointments.html', context)
