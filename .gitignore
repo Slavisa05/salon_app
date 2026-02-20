@@ -2,5 +2,15 @@
 venv
 .env
 env
-__pycache__
-db.sqlite3
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+media/
+.vscode/
+node_modules/
+dist/
+*.zip
+*.bak
+*.swp
+*.tmp
