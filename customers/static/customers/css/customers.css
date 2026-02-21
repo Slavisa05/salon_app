@@ -123,3 +123,38 @@
     flex-direction: column;
     gap: 15px;
 }
+
+@media (max-width: 768px) {
+    .home-section {
+        min-height: 95vh;
+    }
+
+    .grid-3-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .appointments-list {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .appointment-card {
+        width: 70vw;
+    }
+
+    .appointment-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-3-col {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .appointment-card {
+        width: 85vw;
+        padding: 20px;
+    }
+}

@@ -1,4 +1,27 @@
-console.log('main.js');
+const showSidebar = document.querySelector('#showSidebar');
+if (showSidebar) {
+    showSidebar.addEventListener('click', e => {
+        e.preventDefault();
+
+        const sidebar = document.querySelector('.nav-sidebar');
+        sidebar.style.transform = 'translateX(0)';
+    });
+}
+
+const hideSidebar = document.querySelector('#hideSidebar');
+if (hideSidebar) {
+    hideSidebar.addEventListener('click', e => {
+        e.preventDefault();
+
+        const sidebar = document.querySelector('.nav-sidebar');
+        if (!sidebar) return;
+        if (window.innerWidth < 480) {
+            sidebar.style.transform = 'translateX(100vw)';
+        } else {
+            sidebar.style.transform = 'translateX(50vw)';
+        }
+    });
+}
 
 const landingCustomerBtn = document.querySelector('#landingCustomerBtn');
 if (landingCustomerBtn) {
@@ -83,6 +106,28 @@ if (userMenu) {
         document.addEventListener('click', (event) => {
             if (!userMenu.contains(event.target)) {
                 userMenu.classList.remove('is-open');
+                userMenuTrigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+}
+
+const userMenuSidebar = document.querySelector('.user-menu.sidebar');
+if (userMenuSidebar) {
+    const userMenuTrigger = userMenuSidebar.querySelector('.user-menu-trigger');
+
+    if (userMenuTrigger) {
+        userMenuTrigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const isOpen = userMenuSidebar.classList.toggle('is-open');
+            userMenuTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!userMenuSidebar.contains(event.target)) {
+                userMenuSidebar.classList.remove('is-open');
                 userMenuTrigger.setAttribute('aria-expanded', 'false');
             }
         });

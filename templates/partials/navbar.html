@@ -8,7 +8,7 @@
             </a>
         </div>
 
-        <div class="inline-div">
+        <div class="inline-div main-nav">
             {% if user.is_authenticated %}
                 <a class="nav-link" href="{% url 'customers:home' %}">Zakaži</a>
                 {% if user.userprofile.role == 'musterija' %}
@@ -30,6 +30,35 @@
             {%else%}
             <button class="main-btn" id="loginBtn" data-url="{% url 'login' %}">Uloguj se</button>
             <button class="sec-btn" id="registerBtn" data-url="{% url 'register' %}">Registruj se</button>
+            {% endif %}
+        </div>
+        
+        <svg id="showSidebar" xmlns="http://www.w3.org/2000/svg" height="30px" width="30px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
+
+        <!-- sidebar -->
+        <div class="inline-div nav-sidebar">
+            <svg id="hideSidebar" xmlns="http://www.w3.org/2000/svg" height="30px" width="30px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+            {% if user.is_authenticated %}
+                <a class="nav-link" href="{% url 'customers:home' %}">Zakaži</a>
+                {% if user.userprofile.role == 'musterija' %}
+                    <a class="nav-link" href="{% url 'customers:my_appointments' %}">Moji Termini</a>
+                {% endif %}
+                <div class="user-menu sidebar" aria-label="Korisnički meni">
+                    <button type="button" class="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
+                        <span class="user-menu-username">{{ user.username }}</span>
+                        <span class="user-menu-arrow" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="user-menu-dropdown">
+                        <a class="user-menu-link" href="{% url 'user_edit' %}">Izmeni profil</a>
+                        <form method="post" action="{% url 'logout' %}" class="user-menu-form">
+                            {% csrf_token %}
+                            <button type="submit" class="user-menu-link user-menu-logout" id="logoutBtn">Izloguj se</button>
+                        </form>
+                    </div>
+                </div>
+            {%else%}
+            <a class="nav-link accent1" href="{% url 'login' %}">Uloguj se</a>
+            <a class="nav-link accent2" href="{% url 'register' %}">Registruj se</a>
             {% endif %}
         </div>
     </div>
