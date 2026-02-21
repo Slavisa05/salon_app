@@ -1,0 +1,54 @@
+name: Deploy Salon App to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy on VPS
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST << EOF
+            cd $SERVER_PATH
+
+            echo "Pulling latest code..."
+            git pull origin main
+
+            echo "Activating virtual environment..."
+            source venv/bin/activate
+
+            echo "Installing dependencies..."
+            pip install -r requirements.txt --quiet
+
+            echo "Applying migrations..."
+            python manage.py migrate --noinput
+
+            echo "Collecting static files..."
+            python manage.py collectstatic --noinput
+
+            echo "Restarting Gunicorn..."
+            sudo systemctl restart salon_app
+
+            echo "Deployment completed!"
+          EOF
