@@ -1,0 +1,125 @@
+/* HOME PAGE */
+.home-section {
+    padding: 15vh 5vw 5vh 5vw;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 3vh;
+}
+
+.grid-3-col {
+    width: 90%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.home-salon-card {
+    padding: 20px 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 20px;
+    cursor: pointer;
+    background-image: var(--gradient180);
+    color: var(--bg);
+    transition: all 300ms ease;
+}
+
+.home-salon-card:hover {
+    box-shadow: 5px 5px 5px var(--secondary);
+    transform: translateY(-5px);
+}
+
+.home-salon-card:hover svg {
+    transform: translateX(6px);
+}
+
+.home-salon-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.home-salon-card .link {
+    padding-top: 5px;
+    align-self: center;
+}
+
+.home-salon-card .link svg {
+    width: 32px;
+    height: 32px;
+    transition: all 300ms ease;
+}
+
+/* BOOKING PAGE */
+.booking-section {
+    padding-top: 15vh;
+    min-height: 91vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.booking-form {
+    width: min(700px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.booking-form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.booking-form select.form-control {
+    color: var(--bg);
+}
+
+.booking-form select.form-control option {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* MY APPOINTMENTS PAGE */
+.my-appointments-section {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 15vh 5vw 5vh 5vw;
+    min-height: 100vh;
+}
+
+.appointments-grid {
+    padding-top: 5vh;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.appointments-group {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.appointments-list {
+    padding-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 35px;
+}
+
+.appointment-card {
+    padding: 20px 50px;
+    border-radius: 10px;
+    background-image: var(--gradient180);
+    color: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
