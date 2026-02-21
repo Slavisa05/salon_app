@@ -2,7 +2,9 @@
 venv
 .env
 env
+db.sqlite3
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 *.log
@@ -14,3 +16,4 @@ dist/
 *.bak
 *.swp
 *.tmp
+staticfiles/
