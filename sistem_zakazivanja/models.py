@@ -12,7 +12,7 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, blank=True)
     email_verified = models.BooleanField(default=False)
     pending_email = models.EmailField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -24,7 +24,7 @@
                 <button class="main-btn" id="addNewService" data-url="{% url 'salons:create_service' salon_name=salon.name %}">+ dodaj novu uslugu</button>
             </div>
 
-            <div class="dashboard-appoitments"> 
+            <div class="dashboard-appoitments services"> 
                 {% for service in services %}
                     <div class="card services">
                         <h3>{{ service.name }}</h3>

@@ -12,7 +12,15 @@ section {
     padding: 5vh;
 }
 
+h1 {
+    text-align: center;
+}
+
 /* SIDEBAR */
+.mobile-sidebar-toggle {
+    display: none;
+}
+
 .salons-sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -901,4 +909,128 @@ body.sidebar-collapsed .sidebar-toggle-text {
 
 .crop-modal-actions .cancel-btn {
     background: #4b5563;
+}
+
+
+/* ============= */
+/* RESPONZIVNOST */
+/* ============= */
+@media (max-width: 768px) {
+    section {
+        padding: 8vh 5vw;
+    }
+
+    .salons-sidebar {
+        transform: translateX(-100%);
+        width: 100vw;
+        z-index: 2000;
+        background: var(--bg);
+        box-shadow: 0 0 20px rgba(0,0,0,0.15);
+    }
+
+    body.sidebar-open .salons-sidebar {
+        transform: translateX(0);
+    }
+
+    body {
+        padding-left: 0 !important;
+    }
+
+    .sidebar-toggle {
+        display: none; 
+    }
+
+    .mobile-sidebar-toggle {
+        display: block;
+        position: fixed;
+        top: 12px;
+        left: 15px;
+        z-index: 2100;
+        background: var(--primary);
+        color: var(--bg);
+        border: none;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .sidebar-logo {
+        text-align: center;
+    }
+
+    .dashboard-appoitments {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .card.dashboard {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .dashboard-appoitments.services {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .service-container {
+        width: auto;
+    }
+
+    .service-form {
+        width: 80vw;
+    }
+
+    .schedule-container {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .timeline-section {
+        width: 80vw;
+    }
+
+    .salons-settings-section {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .salon-form {
+        width: 80vw;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .salon-form-group {
+        width: 100%;
+    }
+
+    .working-day-row {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .image-upload-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-appoitments {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .service-form {
+        width: 90vw;
+    }
+
+    .timeline-section {
+        width: 90vw;
+    }
 }

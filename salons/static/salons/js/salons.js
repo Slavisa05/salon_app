@@ -15,6 +15,27 @@ if (userEditBtn && userEditBtn.dataset.url) {
     });
 }
 
+// mobile toggle
+const mobileToggle = document.getElementById("mobileSidebarToggle");
+
+if (mobileToggle) {
+    mobileToggle.addEventListener("click", () => {
+        document.body.classList.toggle("sidebar-open");
+    });
+
+    document.addEventListener("click", (e) => {
+        const sidebar = document.querySelector(".salons-sidebar");
+
+        if (
+            document.body.classList.contains("sidebar-open") &&
+            !sidebar.contains(e.target) &&
+            !mobileToggle.contains(e.target)
+        ) {
+            document.body.classList.remove("sidebar-open");
+        }
+    });
+}
+
 // slots
 class SalonScheduler {
     constructor(salonName) {
