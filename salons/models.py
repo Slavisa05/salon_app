@@ -241,30 +241,33 @@ class Appointment(models.Model):
         ordering = ['-created_at']
     
     def save(self, *args, **kwargs):
-        with transaction.atomic():
-            previous = None
-            if self.pk:
-                previous = Appointment.objects.select_related('time_slot', 'service').get(pk=self.pk)
+        # Preskoči proveru slotova ako menjaš samo status!
+        only_status_update = 'update_fields' in kwargs and kwargs['update_fields'] == ['status']
+        if not only_status_update:
+            with transaction.atomic():
+                previous = None
+                if self.pk:
+                    previous = Appointment.objects.select_related('time_slot', 'service').get(pk=self.pk)
 
-            if previous and previous.status != 'otkazano':
-                if (
-                    self.status == 'otkazano'
-                    or previous.time_slot_id != self.time_slot_id
-                    or previous.service_id != self.service_id
-                ):
-                    previous_slots = self._get_slots_for(previous.time_slot, previous.service, create_missing=False)
-                    self._release_slots(previous_slots, exclude_appointment_id=self.pk)
+                if previous and previous.status != 'otkazano':
+                    if (
+                        self.status == 'otkazano'
+                        or previous.time_slot_id != self.time_slot_id
+                        or previous.service_id != self.service_id
+                    ):
+                        previous_slots = self._get_slots_for(previous.time_slot, previous.service, create_missing=False)
+                        self._release_slots(previous_slots, exclude_appointment_id=self.pk)
 
-            if self.status != 'otkazano':
-                slots = self._get_slots_for(self.time_slot, self.service, create_missing=True)
-                self._assert_slots_available(slots)
-                self._mark_slots_busy(slots)
+                if self.status != 'otkazano':
+                    slots = self._get_slots_for(self.time_slot, self.service, create_missing=True)
+                    self._assert_slots_available(slots)
+                    self._mark_slots_busy(slots)
 
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
-            if self.status == 'otkazano':
-                slots = self._get_slots_for(self.time_slot, self.service, create_missing=False)
-                self._release_slots(slots, exclude_appointment_id=self.pk)
+        if self.status == 'otkazano':
+            slots = self._get_slots_for(self.time_slot, self.service, create_missing=False)
+            self._release_slots(slots, exclude_appointment_id=self.pk)
 
     def _get_slot_minutes(self, time_slot):
         start = datetime.combine(time_slot.date, time_slot.begin_time)
