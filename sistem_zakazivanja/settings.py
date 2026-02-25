@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from decouple import config
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -158,3 +159,13 @@ SALON_APPROVAL_NOTIFY_EMAIL = os.getenv('SALON_APPROVAL_NOTIFY_EMAIL', '')
 
 # Auth redirects
 LOGIN_URL = '/login/'
+
+# Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BEAT_SCHEDULE = {
+    'update-appointment-statuses-every-1-min': {
+        'task': 'salons.tasks.update_appointment_statuses',
+        'schedule': crontab(),
+    },
+}

@@ -12,10 +12,6 @@ section {
     padding: 5vh;
 }
 
-h1 {
-    text-align: center;
-}
-
 /* SIDEBAR */
 .mobile-sidebar-toggle {
     display: none;
@@ -918,6 +914,14 @@ body.sidebar-collapsed .sidebar-toggle-text {
 @media (max-width: 768px) {
     section {
         padding: 8vh 5vw;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .register-page-section {
+        padding-top: 0;
     }
 
     .salons-sidebar {

@@ -4,3 +4,5 @@ python-decouple
 Pillow
 psycopg2-binary
 gunicorn
+celery 
+redis

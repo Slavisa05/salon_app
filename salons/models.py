@@ -221,10 +221,9 @@ class TimeSlot(models.Model):
 class Appointment(models.Model):
     STATUS_CHOICES = [
         ('na čekanju', 'Na čekanju'),
-        ('potvrđeno', 'Potvrđeno'),
+        ('u toku', 'U toku'),
         ('završeno', 'Završeno'),
         ('otkazano', 'Otkazano'),
-        ('nije se pojavio', 'Nije se pojavio'),
     ]
 
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name='appointments')
@@ -320,7 +319,7 @@ class Appointment(models.Model):
             if slot.status == 'blokiran':
                 raise ValidationError('Izabrani termin je blokiran.')
 
-            if hasattr(slot, 'appointment') and slot.appointment_id != self.pk:
+            if getattr(slot, 'appointment', None) is not None and slot.appointment.id != self.pk:
                 raise ValidationError('Izabrani termin je već zauzet.')
 
             if slot.status == 'zauzet' and not hasattr(slot, 'appointment'):

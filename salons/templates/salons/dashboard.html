@@ -11,14 +11,13 @@
 {% block content %}
     <main>
         <section class="salon-dashboard-section">
-            <!--
             <div class="dashboard-header">
                 <div class="dashboard-stats">
                     <div class="stat-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h16M7 7h10M7 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
                     </div>
                     <strong>Ukupan prihod ovog meseca</strong>
-                    <p>17.000 din</p>
+                    <p>{{ monthly_earnings }} RSD</p>
                 </div>
 
                 <div class="dashboard-stats">
@@ -45,7 +44,6 @@
                     <p>Fade sisanje</p>
                 </div>
             </div>
-            -->
 
             <h1>Termini za danas</h1>
             <div class="dashboard-appoitments">
@@ -69,9 +67,24 @@
                                 </span>
                                 {{ appointment.time_slot.begin_time|time:"H:i" }}
                             </p>
+                            {% if appointment.notes %}
+                            <p class="card-meta">
+                                <span class="card-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 7h12M6 12h12M6 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                </span>
+                                {{ appointment.notes }}
+                            </p>
+                            {% endif %}
                         </div>
                         <div class="card-right">
-                            <p class="status-text done">{{ appointment.status }}</p>
+                            <p class="status-text
+                                {% if appointment.status == 'na čekanju' %}todo
+                                {% elif appointment.status == 'u toku' %}progress
+                                {% elif appointment.status == 'završeno' %}done
+                                {% endif %}
+                            ">
+                                {{ appointment.status }}
+                            </p>
                         </div>
                     </div>
                 {% endfor %}

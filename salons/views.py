@@ -11,6 +11,9 @@ from django.contrib import messages
 from sistem_zakazivanja.decorators import require_barber_with_approved_salon
 from sistem_zakazivanja.models import UserProfile
 from .models import Salon, TimeSlot, Appointment, Service, SalonWorkingHours
+from django.db.models import Sum
+from django.utils import timezone
+from celery import shared_task
 from .utils import (
     generate_time_slots_for_date,
     create_default_working_hours,
@@ -58,7 +61,27 @@ def salon_dashboard(request, salon_name):
         time_slot__date=today
     ).select_related('time_slot', 'service', 'customer').order_by('time_slot__begin_time').exclude(status='otkazano')
 
-    return render(request, 'salons/dashboard.html', {'salon': salon, 'appointments': appointments})
+    # ukupna zarada ovog meseca
+    now = timezone.now()   
+    start_of_month = date(now.year, now.month, 1)
+
+    monthly_appointments = salon.appointments.filter(
+        time_slot__date__gte=start_of_month,
+        time_slot__date__lte=now.date(),
+        status='zavrseno'
+    )
+
+    monthly_earnings = monthly_appointments.aggregate(
+        total=Sum('service__price')
+    )['total'] or 0
+    
+    context = {
+        'salon': salon, 
+        'appointments': appointments,
+        'monthly_earnings': monthly_earnings
+        }
+
+    return render(request, 'salons/dashboard.html', context)
 
 
 @require_barber_with_approved_salon
