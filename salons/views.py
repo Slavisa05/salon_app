@@ -68,7 +68,7 @@ def salon_dashboard(request, salon_name):
     monthly_appointments = salon.appointments.filter(
         time_slot__date__gte=start_of_month,
         time_slot__date__lte=now.date(),
-        status='zavrseno'
+        status='završeno'
     )
 
     monthly_earnings = monthly_appointments.aggregate(
