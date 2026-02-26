@@ -152,9 +152,19 @@ def available_slots(request, salon_name):
     except ValueError:
         return JsonResponse({'error': 'Neispravan format datuma.'}, status=400)
 
-    # SVE slobodne slotove računamo algoritmom, a ne iz baze!
     slots = get_free_slots_for_day(salon, target_date, getattr(salon, 'slot_interval_minutes', 30))
-    free_slots = [slot for slot in slots if slot['status'] == 'dostupan']
+    now = datetime.now()
+
+    def is_slot_in_future(slot):
+        # Ako je za danas, proveri vreme; za buduće dane propuštaš sve
+        if target_date == now.date():
+            # Slotovi su dict, begin_time i end_time su string npr. '12:00'
+            slot_begin_time = datetime.strptime(slot['begin_time'], '%H:%M').time()
+            # Slot je validan samo ako je vreme POSLE trenutnog vremena
+            return slot_begin_time > now.time()
+        return True
+
+    free_slots = [slot for slot in slots if slot['status'] == 'dostupan' and is_slot_in_future(slot)]
 
     slots_data = [
         {
