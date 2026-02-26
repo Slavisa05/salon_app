@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.core.mail import EmailMultiAlternatives
@@ -15,11 +16,8 @@ from django.db.models import Sum
 from django.utils import timezone
 from celery import shared_task
 from .utils import (
-    generate_time_slots_for_date,
+    get_free_slots_for_day,
     create_default_working_hours,
-    generate_slots_for_next_months,
-    regenerate_future_slots_after_hours_change,
-    regenerate_future_slots_without_booked_days,
     get_default_working_hours_map,
     upsert_working_hours,
 )
@@ -115,89 +113,6 @@ def appointments_page(request, salon_name):
 
 
 @require_barber_with_approved_salon
-def get_slots_for_date(request, salon_name):
-    salon = get_object_or_404(Salon, name=salon_name)
-    date_str = request.GET.get('date')
-    
-    if not (request.user.is_superuser or request.user.is_staff):
-        if salon.owner != request.user:
-            return HttpResponseForbidden("Nemate dozvolu da generišete slotove za ovaj salon!")
-
-    try: 
-        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-    except:
-        return JsonResponse({'error': 'Nevalidan format datuma'}, status=400)
-    
-    slots = generate_time_slots_for_date(salon, target_date)
-
-    appointments = Appointment.objects.select_related('time_slot', 'service').filter(
-        time_slot__salon=salon,
-        time_slot__date=target_date
-    ).exclude(status='otkazano')
-
-    def get_slot_minutes(slot):
-        start = datetime.combine(slot.date, slot.begin_time)
-        end = datetime.combine(slot.date, slot.end_time)
-        minutes = int((end - start).total_seconds() / 60)
-        return minutes if minutes > 0 else 30
-
-    def build_appointment_ranges():
-        ranges = []
-        for appointment in appointments:
-            slot_minutes = get_slot_minutes(appointment.time_slot)
-            duration = appointment.service.duration if appointment.service else slot_minutes
-            start = datetime.combine(appointment.time_slot.date, appointment.time_slot.begin_time)
-            end = start + timedelta(minutes=duration)
-            ranges.append((start, end, appointment))
-        return ranges
-
-    appointment_ranges = build_appointment_ranges()
-
-    # Konvertuj u JSON format
-    slots_data = []
-    for slot in slots:
-        slot_start = datetime.combine(slot.date, slot.begin_time)
-        slot_end = datetime.combine(slot.date, slot.end_time)
-        overlapping_appointment = None
-
-        for appointment_start, appointment_end, appointment in appointment_ranges:
-            if slot_start < appointment_end and slot_end > appointment_start:
-                overlapping_appointment = appointment
-                break
-
-        status = 'zauzet' if overlapping_appointment else slot.status
-        has_appointment = bool(overlapping_appointment) or hasattr(slot, 'appointment')
-
-        slots_data.append({
-            'id': slot.id if slot.id else None,
-            'begin_time': slot.begin_time.strftime('%H:%M'),
-            'end_time': slot.end_time.strftime('%H:%M'),
-            'status': status,
-            'has_appointment': has_appointment
-        })
-    
-    return JsonResponse({'slots': slots_data})
-
-
-@require_barber_with_approved_salon
-@require_POST
-def block_slot(request, salon_name, slot_id):
-    salon = get_object_or_404(Salon, name=salon_name)
-    slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
-
-    if not (request.user.is_superuser or request.user.is_staff):
-        if salon.owner != request.user:
-            return HttpResponseForbidden("Nemate dozvolu da blokirate slotove za ovaj salon")
-
-    if hasattr(slot, 'appointment'):
-        return JsonResponse({'error': 'Slot već ima termin'}, status=400)
-
-    slot.status = 'blokiran'
-    slot.save(update_fields=['status'])
-    return JsonResponse({'status': 'ok'})
-
-
-@require_barber_with_approved_salon
 @require_POST
 def unblock_slot(request, salon_name, slot_id):
     salon = get_object_or_404(Salon, name=salon_name)
@@ -210,8 +125,7 @@ def unblock_slot(request, salon_name, slot_id):
     if hasattr(slot, 'appointment'):
         return JsonResponse({'error': 'Slot već ima termin'}, status=400)
 
-    slot.status = 'dostupan'
-    slot.save(update_fields=['status'])
+    slot.delete()
     return JsonResponse({'status': 'ok'})
 
 
@@ -399,9 +313,7 @@ def create_salon(request):
                 salon.save()
 
                 upsert_working_hours(salon, schedule_form.get_hours_payload())
-                generate_slots_for_next_months(salon)
-
-
+        
                 messages.success(
                     request,
                     f'Salon "{salon.name}" je uspešno kreiran! '
@@ -443,48 +355,16 @@ def edit_salon(request, salon_name):
 
         if form.is_valid() and schedule_form.is_valid():
             try:
-                previous_interval = salon.slot_interval_minutes
-                previous_hours = {
-                    item.day: (item.is_working, item.opening_time, item.closing_time)
-                    for item in salon.working_hours.all()
-                }
-
                 salon = form.save(commit=False)
                 salon.slot_interval_minutes = int(schedule_form.cleaned_data['slot_interval_minutes'])
                 salon.save()
 
                 upsert_working_hours(salon, schedule_form.get_hours_payload())
 
-                interval_changed = previous_interval != salon.slot_interval_minutes
-                interval_update_summary = None
-                if interval_changed:
-                    interval_update_summary = regenerate_future_slots_without_booked_days(salon)
-                else:
-                    for item in salon.working_hours.all():
-                        previous = previous_hours.get(item.day)
-                        current = (item.is_working, item.opening_time, item.closing_time)
-                        if previous != current:
-                            regenerate_future_slots_after_hours_change(salon, item.day)
-
-                if interval_changed and interval_update_summary:
-                    regenerated_days = interval_update_summary['regenerated_days']
-                    skipped_days = interval_update_summary['skipped_days']
-                    if skipped_days > 0:
-                        messages.success(
-                            request,
-                            'Salon je ažuriran! Novi interval je primenjen samo na dane bez zakazanih termina '
-                            f'({regenerated_days} dana ažurirano, {skipped_days} dana preskočeno).'
-                        )
-                    else:
-                        messages.success(
-                            request,
-                            f'Salon je ažuriran! Novi interval je primenjen na svih {regenerated_days} dana.'
-                        )
-                else:
-                    messages.success(
-                        request,
-                        'Salon je ažuriran! '
-                    )
+                messages.success(
+                    request,
+                    'Salon je ažuriran!'
+                )
                 return redirect('salons:edit_salon', salon_name=salon.name)
             except Exception as e:
                 messages.error(request, f'Greška pri ažuriranju salona: {str(e)}')
@@ -587,3 +467,53 @@ def delete_service(request, salon_name, service_id):
         messages.error(request, f'Greška pri brisanju usluge: {str(e)}')
     
     return redirect('salons:services_page', salon_name=salon.name)
+
+# API
+@login_required
+def salon_slots_api(request, salon_name):
+    date_str = request.GET.get('date')
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except Exception:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    try:
+        salon = Salon.objects.get(name=salon_name)
+    except Salon.DoesNotExist:
+        return JsonResponse({'error': 'Salon not found'}, status=404)
+
+    slots = get_free_slots_for_day(salon, date_obj, salon.slot_interval_minutes or 30)
+    return JsonResponse({'slots': slots})
+
+
+@csrf_exempt
+@require_POST
+@login_required
+@require_barber_with_approved_salon
+def block_virtual_slot(request, salon_name):
+    data = json.loads(request.body.decode())
+    date = data['date']
+    begin_time = data['begin_time']
+    end_time = data['end_time']
+    salon = get_object_or_404(Salon, name=salon_name)
+    # create or get slot
+    slot, created = TimeSlot.objects.get_or_create(
+        salon=salon,
+        date=date,
+        begin_time=begin_time,
+        end_time=end_time,
+        defaults={'status':'blokiran'}
+    )
+    if not created and slot.status != 'dostupan':
+        return JsonResponse({'error': 'Slot conflict'}, status=409)
+    if not created:
+        slot.status = 'blokiran'
+        slot.save(update_fields=['status'])
+    return JsonResponse({
+        'slot': {
+            'id': slot.id,
+            'begin_time': str(slot.begin_time)[:5],
+            'end_time': str(slot.end_time)[:5],
+            'status': slot.status
+        }
+    })

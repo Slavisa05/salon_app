@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from salons.models import Salon, Service, TimeSlot, Appointment
-from salons.utils import generate_time_slots_for_date
+from salons.utils import get_free_slots_for_day
 from sistem_zakazivanja.models import UserProfile
 
 def home(request):
@@ -23,6 +23,7 @@ def _is_customer(user):
 
 @login_required
 def booking_form(request, salon_name):
+    # Samo customer može da zakazuje
     if not _is_customer(request.user):
         messages.error(request, 'Samo musterije mogu zakazivati termine.')
         return redirect('redirect_after_login')
@@ -34,18 +35,48 @@ def booking_form(request, salon_name):
         service_id = request.POST.get('service')
         slot_id = request.POST.get('slot')
         notes = request.POST.get('notes', '').strip()
+        date_str = request.POST.get('date')
+        begin_time = request.POST.get('begin_time')
+        end_time = request.POST.get('end_time')
 
-        if not service_id or not slot_id:
+        if not service_id or (not slot_id and (not date_str or not begin_time or not end_time)):
             messages.error(request, 'Izaberite uslugu i termin.')
             return redirect('customers:booking_form', salon_name=salon.name)
 
         service = get_object_or_404(Service, id=service_id, salon=salon)
-        slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
+        target_date = (
+            datetime.strptime(date_str, '%Y-%m-%d').date()
+            if date_str else None
+        )
 
-        if slot.status != 'dostupan':
-            messages.error(request, 'Izabrani termin više nije dostupan. Izaberite drugi.')
-            return redirect('customers:booking_form', salon_name=salon.name)
+        # 1. Pronađi slot – iz baze ili napravi novi ako je virtuelan
+        if not slot_id or slot_id in ['null', 'None']:
+            if not (date_str and begin_time and end_time):
+                messages.error(request, "Izaberite validan termin!")
+                return redirect('customers:booking_form', salon_name=salon.name)
+            # konvertuj string -> time
+            begin_time_obj = datetime.strptime(begin_time, '%H:%M').time()
+            end_time_obj = datetime.strptime(end_time, '%H:%M').time()
+            slot, created = TimeSlot.objects.get_or_create(
+                salon=salon,
+                date=target_date,
+                begin_time=begin_time_obj,
+                end_time=end_time_obj,
+                defaults={'status': 'dostupan'}
+            )
+            if not created and slot.status != 'dostupan':
+                messages.error(request, 'Izabrani termin više nije dostupan.')
+                return redirect('customers:booking_form', salon_name=salon.name)
+        else:
+            # Slot već postoji u bazi
+            slot = get_object_or_404(TimeSlot, id=slot_id, salon=salon)
+            if slot.status != 'dostupan':
+                messages.error(request, 'Izabrani termin više nije dostupan.')
+                return redirect('customers:booking_form', salon_name=salon.name)
+            slot.status = 'zauzet'
+            slot.save(update_fields=['status'])
 
+        # 2. Kreiraj Appointment
         try:
             appointment = Appointment.objects.create(
                 salon=salon,
@@ -56,6 +87,7 @@ def booking_form(request, salon_name):
                 status='na čekanju'
             )
 
+            # 3. Pošalji email vlasniku salona
             owner_email = salon.owner.email
             if owner_email:
                 try:
@@ -82,7 +114,6 @@ def booking_form(request, salon_name):
                       </body>
                     </html>
                     """
-
                     email_message = EmailMultiAlternatives(
                         subject,
                         message_text,
@@ -96,18 +127,16 @@ def booking_form(request, salon_name):
 
             messages.success(request, 'Termin je uspešno zakazan.')
             return redirect('customers:booking_form', salon_name=salon.name)
-        except ValidationError as error:
-            messages.error(request, error.message)
-        except Exception:
-            messages.error(request, 'Greška pri zakazivanju termina. Pokušajte ponovo.')
+        except Exception as error:
+            messages.error(request, f'Greška pri zakazivanju termina. Pokušajte ponovo. ({error})')
 
+    # Prikaz forme (GET)
     context = {
         'salon': salon,
         'services': services,
         'today': date.today().isoformat(),
     }
     return render(request, 'customers/appointment_form.html', context)
-
 
 @login_required
 def available_slots(request, salon_name):
@@ -116,32 +145,27 @@ def available_slots(request, salon_name):
 
     salon = get_object_or_404(Salon, name=salon_name, is_approved=True, is_active=True)
     date_str = request.GET.get('date')
-
     if not date_str:
         return JsonResponse({'error': 'Datum je obavezan.'}, status=400)
-
     try:
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         return JsonResponse({'error': 'Neispravan format datuma.'}, status=400)
 
-    generate_time_slots_for_date(salon, target_date)
-
-    slots = TimeSlot.objects.filter(
-        salon=salon,
-        date=target_date,
-        status='dostupan',
-        appointment__isnull=True
-    ).order_by('begin_time')
+    # SVE slobodne slotove računamo algoritmom, a ne iz baze!
+    slots = get_free_slots_for_day(salon, target_date, getattr(salon, 'slot_interval_minutes', 30))
+    free_slots = [slot for slot in slots if slot['status'] == 'dostupan']
 
     slots_data = [
         {
-            'id': slot.id,
-            'label': f"{slot.begin_time.strftime('%H:%M')} - {slot.end_time.strftime('%H:%M')}"
+            'id': slot.get('id'),
+            'label': f"{slot['begin_time']} - {slot['end_time']}",
+            'begin_time': slot['begin_time'],
+            'end_time': slot['end_time'],
+            'status': slot['status'],
         }
-        for slot in slots
+        for slot in free_slots
     ]
-
     return JsonResponse({'slots': slots_data})
 
 

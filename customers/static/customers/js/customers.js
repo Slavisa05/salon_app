@@ -47,9 +47,33 @@ if (bookingRoot) {
 
 		slots.forEach((slot) => {
 			const option = document.createElement('option');
-			option.value = slot.id;
+			option.value = slot.id ? slot.id : '';                
 			option.textContent = slot.label;
+			if (!slot.id) { // virtuelni slot
+				option.dataset.beginTime = slot.begin_time;
+				option.dataset.endTime = slot.end_time;
+				option.dataset.date = dateInput?.value;
+			}
 			slotSelect.appendChild(option);
+		});
+
+		slotSelect.addEventListener('change', function() {
+			const selectedOption = slotSelect.options[slotSelect.selectedIndex];
+			const beginInput = document.getElementById('slot-begin-time');
+			const endInput = document.getElementById('slot-end-time');
+			const dateInputHidden = document.getElementById('slot-date');
+
+			if (selectedOption.value && selectedOption.value !== "null") {
+				// Odabrali smo slot iz baze, obriši begin/end/date
+				beginInput.value = '';
+				endInput.value = '';
+				dateInputHidden.value = '';
+			} else {
+				// Virtuelni slot
+				beginInput.value = selectedOption.dataset.beginTime || '';
+				endInput.value = selectedOption.dataset.endTime || '';
+				dateInputHidden.value = selectedOption.dataset.date || dateInput.value;
+			}
 		});
 
 		slotSelect.disabled = false;

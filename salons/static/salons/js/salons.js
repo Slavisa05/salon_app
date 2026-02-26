@@ -180,9 +180,7 @@ class SalonScheduler {
     }
     
     // Klik na slot
-    handleSlotClick(slot) {
-        console.log('Clicked slot:', slot);
-        
+    handleSlotClick(slot) {        
         // Proveri status i prikaži odgovarajuće opcije
         switch(slot.status) {
             case 'dostupan':
@@ -204,7 +202,7 @@ class SalonScheduler {
         
         if (actions.includes('block')) {
             if (confirm('Želite da blokirate ovaj termin?')) {
-                this.blockSlot(slot.id);
+                this.blockSlot(slot);
             }
         }
 
@@ -370,32 +368,47 @@ class SalonScheduler {
         this.modalElement.setAttribute('aria-hidden', 'true');
     }
     
-    // Blokiraj slot
-    async blockSlot(slotId) {
-        if (!slotId) {
-            this.showError('Termin nema ID');
-            return;
-        }
-        try {
-            const response = await fetch(`/salons/${this.salonName}/slots/${slotId}/block/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCsrfToken()
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to block slot');
+    // blokiraj slot
+    async blockSlot(slot) {
+        if (slot.id) {
+            // postoji u bazi - blokiraj postojeći slot preko ID
+            try {
+                const response = await fetch(`/salons/${this.salonName}/slots/${slot.id}/block/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to block slot');
+                this.loadSlots(this.selectedDate);
+                this.showSuccess('Termin je blokiran');
+            } catch (error) {
+                console.error('Error blocking slot:', error);
+                this.showError('Greška pri blokiranju termina');
             }
-            
-            // Refresh slotove
-            this.loadSlots(this.selectedDate);
-            this.showSuccess('Termin je blokiran');
-            
-        } catch (error) {
-            console.error('Error blocking slot:', error);
-            this.showError('Greška pri blokiranju termina');
+        } else {
+            // slot nema ID - pravi novi slot i odmah mu postavi status 'blokiran'
+            try {
+                const response = await fetch(`/salons/${this.salonName}/slots/block/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        date: this.formatDate(this.selectedDate),
+                        begin_time: slot.begin_time,
+                        end_time: slot.end_time
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to create blocked slot');
+                this.loadSlots(this.selectedDate);
+                this.showSuccess('Termin je blokiran');
+            } catch (error) {
+                console.error('Error blocking slot:', error);
+                this.showError('Greška pri blokiranju termina');
+            }
         }
     }
     

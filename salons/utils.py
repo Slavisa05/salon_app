@@ -69,154 +69,60 @@ def create_default_working_hours(salon):
             }
         )
 
-
-def generate_slots_for_next_months(salon, months=2):
-    """
-    Generiše slotove za narednih X meseci od danas
-    """
-    start_date = date.today()
-    end_date = start_date + timedelta(days=30 * months) 
-    
-    current_date = start_date
-    
-    while current_date <= end_date:
-        generate_time_slots_for_date(salon, current_date)
-        current_date += timedelta(days=1)
-
-
-def generate_time_slots_for_date(salon, target_date):
-    """
-    Generiše sve moguće time slotove za salon na određeni datum
-    """
-    # 1. Odredi dan u nedelji
+def get_free_slots_for_day(salon, target_date, slot_minutes=30):
+    # 1. Proveri da li salon radi tog dana
     day_name = target_date.strftime('%A').lower()
     serbian_day = DAY_MAPPING.get(day_name)
-    
-    # 2. Proveri da li salon radi tog dana
     try:
-        working_hours = SalonWorkingHours.objects.get(
-            salon=salon,
-            day=serbian_day,
-            is_working=True
-        )
+        wh = SalonWorkingHours.objects.get(salon=salon, day=serbian_day, is_working=True)
     except SalonWorkingHours.DoesNotExist:
-        # Ne radi tog dana - ne generiši slotove
         return []
-    
-    # 3. Generiši sve slotove od opening do closing (svakih 15 ili 30 min)
+
+    # 2. Generiši sve slotove u radnom vremenu
     slots = []
-    current_time = datetime.combine(target_date, working_hours.opening_time)
-    end_time = datetime.combine(target_date, working_hours.closing_time)
-    slot_minutes = getattr(salon, 'slot_interval_minutes', 30) or 30
+    start_dt = datetime.combine(target_date, wh.opening_time)
+    end_dt = datetime.combine(target_date, wh.closing_time)
     slot_duration = timedelta(minutes=slot_minutes)
+    while start_dt + slot_duration <= end_dt:
+        slots.append( (start_dt.time(), (start_dt + slot_duration).time()) )
+        start_dt += slot_duration
+
+    # 3. Skupi sve zauzete i blokirane slotove
+    blocked = list(TimeSlot.objects.filter(
+        salon=salon,
+        date=target_date,
+        status='blokiran'
+    ))
+    reserved = list(Appointment.objects.filter(
+        salon=salon,
+        time_slot__date=target_date
+    ).exclude(status='otkazano'))
+
+    # map blokiranih i zauzetih po (start, end)
+    slot_map = {}  # (start, end): {"status":..., "id":...}
+    for slot in blocked:
+        slot_map[(slot.begin_time, slot.end_time)] = {"status": "blokiran", "id": slot.id}
+    for appt in reserved:
+        slot_map[(appt.time_slot.begin_time, appt.time_slot.end_time)] = {"status": "zauzet", "id": appt.time_slot.id}
     
-    while current_time + slot_duration <= end_time:
-        slot_end = current_time + slot_duration
-        
-        # 4. Proveri da li slot već postoji
-        existing_slot = TimeSlot.objects.filter(
-            salon=salon,
-            date=target_date,
-            begin_time=current_time.time()
-        ).first()
-        
-        if existing_slot:
-            slots.append(existing_slot)
+    # 4. Kreiraj listu za response
+    free_slots = []
+    for start, end in slots:
+        key = (start, end)
+        if key in slot_map:
+            slot = slot_map[key]
+            free_slots.append({
+                "begin_time": start.strftime("%H:%M"),
+                "end_time": end.strftime("%H:%M"),
+                "status": slot["status"],
+                "id": slot["id"]
+            })
         else:
-            # Kreiraj novi slot
-            slot = TimeSlot.objects.create(
-                salon=salon,
-                date=target_date,
-                begin_time=current_time.time(),
-                end_time=slot_end.time(),
-                status='dostupan'
-            )
-            slots.append(slot)
-        
-        current_time += slot_duration
-    
-    return slots
-
-
-def add_one_day_slots(salon):
-    """
-    Dodaje slotove za jedan novi dan (2 meseca unapred od danas)
-    Koristi se u daily task-u
-    """
-    target_date = date.today() + timedelta(days=60) 
-    generate_time_slots_for_date(salon, target_date)
-
-
-def regenerate_future_slots_after_hours_change(salon, changed_day):
-    """
-    Kada se promeni radno vreme, regeneriši buduće slotove za taj dan
-    Briše samo DOSTUPNE slotove (ne dira zauzete termine)
-    """
-    today = date.today()
-    end_date = today + timedelta(days=60)
-    
-    current_date = today
-    
-    while current_date <= end_date:
-        # Proveri da li je ovaj dan u nedelji jednak promenjenom danu
-        day_name = current_date.strftime('%A').lower()
-        if DAY_MAPPING[day_name] == changed_day:
-            # Obriši samo DOSTUPNE slotove za taj dan
-            TimeSlot.objects.filter(
-                salon=salon,
-                date=current_date,
-                status='dostupan'
-            ).delete()
+            free_slots.append({
+                "begin_time": start.strftime("%H:%M"),
+                "end_time": end.strftime("%H:%M"),
+                "status": "dostupan",
+                "id": None
+            })
             
-            # Regeneriši slotove
-            generate_time_slots_for_date(salon, current_date)
-        
-        current_date += timedelta(days=1)
-
-
-def regenerate_future_slots_all_days(salon):
-    today = date.today()
-    end_date = today + timedelta(days=60)
-
-    current_date = today
-    while current_date <= end_date:
-        TimeSlot.objects.filter(
-            salon=salon,
-            date=current_date,
-            status='dostupan'
-        ).delete()
-        generate_time_slots_for_date(salon, current_date)
-        current_date += timedelta(days=1)
-
-
-def regenerate_future_slots_without_booked_days(salon):
-    today = date.today()
-    end_date = today + timedelta(days=60)
-
-    current_date = today
-    regenerated_days = 0
-    skipped_days = 0
-
-    while current_date <= end_date:
-        has_active_appointments = Appointment.objects.filter(
-            time_slot__salon=salon,
-            time_slot__date=current_date,
-        ).exclude(status='otkazano').exists()
-
-        if has_active_appointments:
-            skipped_days += 1
-        else:
-            TimeSlot.objects.filter(
-                salon=salon,
-                date=current_date,
-                status='dostupan'
-            ).delete()
-            generate_time_slots_for_date(salon, current_date)
-            regenerated_days += 1
-
-        current_date += timedelta(days=1)
-
-    return {
-        'regenerated_days': regenerated_days,
-        'skipped_days': skipped_days,
-    }
+    return free_slots
