@@ -137,10 +137,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_URL = 'static/'
+STATIC_URL = '/salon/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/salon/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Email backend
@@ -158,7 +158,7 @@ APP_BASE_URL = os.getenv('APP_BASE_URL', 'http://127.0.0.1:8000')
 SALON_APPROVAL_NOTIFY_EMAIL = os.getenv('SALON_APPROVAL_NOTIFY_EMAIL', '')
 
 # Auth redirects
-LOGIN_URL = '/login/'
+LOGIN_URL = '/salon/login/'
 
 # Celery
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
@@ -169,3 +169,7 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(),
     },
 }
+
+FORCE_SCRIPT_NAME = "/salon"
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
